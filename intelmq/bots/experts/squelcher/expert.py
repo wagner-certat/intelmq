@@ -14,7 +14,7 @@ from intelmq.lib.utils import load_configuration
 SELECT_QUERY = '''
 SELECT COUNT(*) FROM {table}
 WHERE
-"time.source" + INTERVAL '%s HOURS' > LOCALTIMESTAMP AND
+"time.source" + INTERVAL '%s SECONDS' > LOCALTIMESTAMP AND
 "classification.type" = %s AND
 "classification.identifier" = %s AND
 "source.ip" = %s AND
@@ -57,11 +57,16 @@ class SquelcherExpertBot(Bot):
             self.acknowledge_message()
             return
 
+        if 'source.ip' not in event and 'source.fqdn' in event:
+            event.add('notify', True, force=True)
+            self.modify_end(event)
+            return
+
         ttl = None
         for ruleset in self.config:
             condition = ruleset[0].copy()
             in_net = True
-            if 'source.network' in condition:
+            if 'source.network' in condition and 'source.ip' in event:
                 in_net = (ip_address(event['source.ip']) in
                           ip_network(condition['source.network']))
                 del condition['source.network']

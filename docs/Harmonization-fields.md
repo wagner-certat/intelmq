@@ -45,11 +45,15 @@ Harmonization field names
 |Malware|malware.name|MalwareName|A malware family name in lower case.|
 |Malware|malware.version|String|A version string for an identified artifact generation, e.g. a crime-ware kit.|
 ||misp_uuid|UUID|MISP - Malware Information Sharing Platform & Threat Sharing UUID.|
+||notify|Boolean|If mail will be sent out to affected or responsible contact.|
 |Protocol|protocol.application|String|e.g. vnc, ssh, sip, irc, http or p2p.|
 |Protocol|protocol.transport|String|e.g. tcp, udp, icmp.|
 ||raw|Base64|The original line of the event from encoded in base64.|
-||rtir_id|Integer|Request Tracker Incident Response incident id.|
+||rtir_incident_id|Integer|Request Tracker Incident Response incident id.|
+||rtir_investigation_id|Integer|Request Tracker Incident Response investigation id.|
+||rtir_report_id|Integer|Request Tracker Incident Response incident report id.|
 ||screenshot_url|URL|Some source may report URLs related to a an image generated of a resource without any metadata. Or an URL pointing to resource, which has been rendered into a webshot, e.g. a PNG image and the relevant metadata related to its retrieval/generation.|
+||sent_at|DateTime|Time when the report has been sent to the responsible recipient.|
 |Source|source.abuse_contact|String|Abuse contact for source address. TODO: list?|
 |Source|source.account|String|An account name or email address, which has been identified to relate to the source of an abuse event.|
 |Source|source.allocated|DateTime|Allocation date corresponding to bgp prefix.|
@@ -97,7 +101,6 @@ Sanitation encodes to base64 and accepts binary and unicode strings.
 
 
 
-### Boolean
 
 Boolean type. Without sanitation only python bool is accepted.
 
