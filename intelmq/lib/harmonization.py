@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 The following types are implemented with sanitize() and is_valid() functions:
@@ -163,6 +162,7 @@ class ClassificationType(GenericType):
                       'phishing',
                       'vulnerable service',
                       'blacklist',
+                      'other',
                       'unknown'
                       ]
 

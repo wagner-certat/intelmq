@@ -57,7 +57,7 @@ The following instructions assume the following requirements:
 
 ```bash
 apt-get install python3 python3-pip
-apt-get install git build-essential libcurl4-gnutls-dev libffi-dev
+apt-get install git build-essential libcurl4-gnutls-dev libffi-dev python-dev
 apt-get install redis-server
 ```
 
@@ -575,8 +575,8 @@ python setup.py install
 * Apply your configurations backup.
 
 ```bash
-rm -rf /opt/intelmq/*
-cp -R /opt/intelmq-backup/* /opt/intelmq/
+rm -rf /opt/intelmq/etc/*
+cp -R /opt/intelmq-backup/etc/* /opt/intelmq/etc/
 ```
 
 ## Redefine permissions
