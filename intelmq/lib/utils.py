@@ -31,18 +31,20 @@ try:
 except ImportError:
     unicodecsv = None
 
-__all__ = ['decode', 'encode', 'base64_encode', 'base64_decode',
-           'load_configuration', 'load_parameters', 'log', 'reverse_readline',
-           'parse_logline']
+
+__all__ = ['base64_decode', 'base64_encode', 'decode', 'encode',
+           'load_configuration', 'load_parameters', 'log', 'parse_logline',
+           'reverse_readline',
+           ]
 
 # Used loglines format
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 LOG_FORMAT_STREAM = '%(name)s: %(message)s'
 
 # Regex for parsing the above LOG_FORMAT
-LOG_REGEX = (r'^(?P<asctime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+) -'
-             r' (?P<name>[-\w]+) - '
-             r'(?P<levelname>[A-Z]+) - '
+LOG_REGEX = (r'^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d+) -'
+             r' (?P<bot_id>[-\w]+) - '
+             r'(?P<log_level>[A-Z]+) - '
              r'(?P<message>.+)$')
 
 
@@ -199,7 +201,7 @@ def load_parameters(*configs):
 
 
 def log(name, log_path=DEFAULT_LOGGING_PATH, log_level="DEBUG", stream=None,
-        syslog=False):
+        syslog=None):
     """
     Returns a logger instance logging to file and sys.stderr or other stream.
 
@@ -300,17 +302,16 @@ def parse_logline(logline):
     Returns:
     --------
     result : dict
-        dictionary with keys: ['message', 'name', 'levelname', 'asctime']
+        dictionary with keys: ['date', 'bot_id', 'log_level', 'message']
     """
 
     match = re.match(LOG_REGEX, logline)
-    result = {}
-    fields = ("asctime", "name", "levelname", "message")
+    fields = ("date", "bot_id", "log_level", "message")
 
-    if match:
-        result = dict(list(zip(fields, match.group(*fields))))
-
-    return result
+    try:
+        return dict(list(zip(fields, match.group(*fields))))
+    except AttributeError:
+        return logline
 
 
 def csv_reader(csv_data, dialect=csv.excel, dictreader=False, **kwargs):

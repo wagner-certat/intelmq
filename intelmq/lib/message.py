@@ -16,6 +16,9 @@ from intelmq import HARMONIZATION_CONF_FILE
 from intelmq.lib import utils
 
 
+__all__ = ['Event', 'Message', 'MessageFactory', 'Report']
+
+
 harm_config = utils.load_configuration(HARMONIZATION_CONF_FILE)
 
 
@@ -126,16 +129,10 @@ class Message(dict):
 
         super(Message, self).__setitem__(key, value)
 
-    def value(self, key):  # TODO: Remove? Use get instead
-        return self.__getitem__(key)
-
     def update(self, key, value, sanitize=True):
         if key not in self:
             raise exceptions.KeyNotExists(key)
         self.add(key, value, force=True, sanitize=sanitize)
-
-    def clear(self, key):  # TODO: Remove? Use del instead
-        self.__delitem__(key)
 
     def contains(self, key):
         return key in self

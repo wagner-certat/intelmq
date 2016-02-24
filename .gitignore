@@ -17,3 +17,5 @@ dist
 htmlcov/
 *.pem
 *.key
+src/
+.eggs
