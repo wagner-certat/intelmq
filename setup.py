@@ -13,6 +13,7 @@ REQUIRES = [
     'redis>=2.10.3',
     'requests>=2.7.0',
     'six>=1.9.0',
+    'tabulate>=0.7.5',
 ]
 if sys.version_info[0] == 2:
     REQUIRES += ['dnspython>=1.12.0']
@@ -95,6 +96,7 @@ setup(
     data_files=DATA,
     entry_points={
         'console_scripts': [
+            'intelmqcli = intelmq.bin.intelmqcli:main',
             'intelmqctl = intelmq.bin.intelmqctl:main',
             'intelmqdump = intelmq.bin.intelmqdump:main',
             'intelmq_psql_initdb = intelmq.bin.intelmq_psql_initdb:main',
