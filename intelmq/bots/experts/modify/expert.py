@@ -2,7 +2,6 @@
 """
 Modify Expert bot let's you manipulate all fields with a config file.
 """
-from __future__ import unicode_literals
 import re
 import sys
 
@@ -24,8 +23,11 @@ def matches(event, *rules):
                 continue
         if name not in event:
             return False
-        if not re.search(rule, event[name]):
-            return False
+        if not isinstance(event[name], str):  # int, float, etc
+            return event[name] == rule
+        else:
+            if not re.search(rule, event[name]):
+                return False
 
     return True
 
@@ -42,10 +44,6 @@ class ModifyExpertBot(Bot):
 
     def process(self):
         event = self.receive_message()
-
-        if event is None:
-            self.acknowledge_message()
-            return
 
         for section_id, section in self.config.items():
             default_cond = section.get('__default', [{}, {}])[0]
