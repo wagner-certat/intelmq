@@ -9,8 +9,8 @@ import subprocess
 __all__ = ['QUERY_INSERT_CONTACT', 'QUERY_GET_TEXT', 'CSV_FIELDS', 'QUERY_BY_ASCONTACT',
            'getTerminalHeight', 'EPILOG', 'QUERY_BY_ASNUM', 'APPNAME', 'QUERY_COUNT_ASN',
            'QUERY_SET_RTIRID', 'USAGE', 'QUERY_UPDATE_CONTACT', 'DESCRIPTION',
-           'QUERY_FEED_NAMES', 'QUERY_TEXT_NAMES', 'target_from_row']
-
+           'QUERY_FEED_NAMES', 'QUERY_IDENTIFIER_NAMES', 'QUERY_TAXONOMY_NAMES',
+           'QUERY_TYPE_NAMES', 'QUERY_TEXT_NAMES', 'target_from_row']
 APPNAME = "intelmqcli"
 DESCRIPTION = """
 """
@@ -45,8 +45,14 @@ USAGE = '''
     intelmqcli
     intelmqcli --dry-run
     intelmqcli --verbose
+    intelmqcli --batch
+    intelmqcli --quiet
     intelmqcli --compress-csv
     intelmqcli --list-feeds
+    intelmqcli --list-identifiers
+    intelmqcli --list-taxonomies
+    intelmqcli --taxonomy='taxonomy'
+    intelmqcli --list-types
     intelmqcli --list-texts
     intelmqcli --text='boilerplate name'
     intelmqcli --feed='feedname' '''
@@ -56,6 +62,7 @@ QUERY_COUNT_ASN = """
         COALESCE({conttab}.contacts, '') as contacts,
         string_agg(DISTINCT cast({evtab}."source.asn" as varchar), ', ') as asn,
         string_agg(DISTINCT {evtab}."classification.type", ', ') as classification,
+        string_agg(DISTINCT {evtab}."classification.taxonomy", ', ') as taxonomy,
         string_agg(DISTINCT {evtab}."feed.code", ', ') as feeds,
         COALESCE({conttab}.contacts, cast({evtab}."source.asn" as varchar))
             as grouping
@@ -72,12 +79,19 @@ QUERY_COUNT_ASN = """
             {evtab}."source.geolocation.cc" LIKE '{cc}' OR
             {evtab}."source.fqdn" LIKE %s
         )
-        AND "feed.name" ILIKE %s AND
-        "time.source" IS NOT NULL
+        AND {evtab}."feed.name" ILIKE %s AND
+        {evtab}."time.source" IS NOT NULL AND
+        {evtab}."classification.taxonomy" ILIKE %s
     GROUP BY {conttab}.contacts, grouping;
     """
 
 QUERY_FEED_NAMES = "SELECT DISTINCT \"feed.name\" from events"
+
+QUERY_IDENTIFIER_NAMES = "SELECT DISTINCT \"classification.identifier\" from events"
+
+QUERY_TAXONOMY_NAMES = "SELECT DISTINCT \"classification.taxonomy\" from events"
+
+QUERY_TYPE_NAMES = "SELECT DISTINCT \"classification.type\" from events"
 
 QUERY_TEXT_NAMES = "SELECT DISTINCT \"key\" from boilerplates"
 
@@ -92,9 +106,9 @@ CSV_FIELDS=["time.source", "source.ip", "protocol.transport", "source.port", "pr
             "source.asn", "source.geolocation.cc",
             "source.geolocation.city",
             "classification.taxonomy", "classification.type", "classification.identifier",
-            "destination.ip","destination.port","destination.fqdn","destination.url",
-            "feed", "event_description.text","event_description.url","malware.name","comment", "additional_field_freetext","version: 1.0"
-           ]
+            "destination.ip", "destination.port", "destination.fqdn", "destination.url",
+            "feed", "event_description.text", "event_description.url", "malware.name", "comment", "additional_field_freetext", "version: 1.0"
+            ]
 
 QUERY_BY_ASCONTACT = """
 SELECT
@@ -152,7 +166,7 @@ SELECT
     {evtab}."screenshot_url",
     {evtab}."status",
     {evtab}."time.observation"
-FROM events
+FROM {evtab}
 LEFT OUTER JOIN {conttab} ON {evtab}."source.asn" = {conttab}.asnum
 WHERE
     notify = TRUE AND (
@@ -165,8 +179,9 @@ WHERE
         {evtab}."source.fqdn" LIKE %s
     ) AND
     {conttab}.contacts = %s AND
-    "feed.name" ILIKE %s AND
-    "time.source" IS NOT NULL;
+    {evtab}."feed.name" ILIKE %s AND
+    {evtab}."time.source" IS NOT NULL AND
+    {evtab}."classification.taxonomy" ILIKE %s;
 """
 
 QUERY_BY_ASNUM = """
@@ -225,7 +240,7 @@ SELECT
     {evtab}."screenshot_url",
     {evtab}."status",
     {evtab}."time.observation"
-FROM events
+FROM {evtab}
 LEFT OUTER JOIN {conttab} ON {evtab}."source.asn" = {conttab}.asnum
 WHERE
     notify = TRUE AND (
@@ -238,8 +253,9 @@ WHERE
         {evtab}."source.fqdn" LIKE %s
     ) AND
     {evtab}."source.asn" = %s AND
-    "feed.name" ILIKE %s AND
-    "time.source" IS NOT NULL;
+    {evtab}."feed.name" ILIKE %s AND
+    {evtab}."time.source" IS NOT NULL AND
+    {evtab}."classification.taxonomy" ILIKE %s;
 """
 
 

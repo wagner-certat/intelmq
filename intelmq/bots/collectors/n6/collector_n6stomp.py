@@ -29,7 +29,7 @@ class MyListener(stomp.ConnectionListener):
 
     def on_message(self, headers, message):
         try:
-            print message
+            print(message)
         except:
             pass
 
