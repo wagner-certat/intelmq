@@ -52,9 +52,9 @@ It is required to look up the correct configuration.
 
 Every bot-type is defined by a dictionary with three values:
 - `required_fields`: A list of tuples containing intelmq's field name, field
-  name from data and an optional conversion function. Errors are raisen, when
-  field does not exists in data.
-- `optional_fields`: Same format as above, but does not raise errors of field
+  name from data and an optional conversion function. Errors are raised, when
+  fields do not exist in the incoming event.
+- `optional_fields`: Same format as above, but does not raise errors if a field
   does not exist. If there's no mapping to an intelmq field, you can give a
   tuple of showserver key and conversion function or not mention it at all.
   In both cases, the data will be added to extra.
