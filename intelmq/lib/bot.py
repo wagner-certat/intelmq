@@ -125,7 +125,10 @@ class Bot(object):
                 self.process()
                 self.__error_retries_counter = 0  # reset counter
 
-                self.__source_pipeline.sleep(self.parameters.rate_limit)
+                if (self.__source_pipeline):
+                    self.__source_pipeline.sleep(self.parameters.rate_limit)
+                else:
+                    time.sleep(self.parameters.rate_limit)
 
             except exceptions.PipelineError:
                 error_on_pipeline = True
