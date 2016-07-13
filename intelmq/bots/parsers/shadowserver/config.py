@@ -12,7 +12,11 @@ of at least three keys:
  2) optional fields:
     the parser will try to interpret these values.
     if it fails, the value is written to the extra field
- 3) The classification type of this field and additional properties.
+ 3) constant fields:
+    Some information about an event may not be explicitly stated in a
+    feed because it is implicit in the nature of the feed. For instance
+    a feed that is exclusively about HTTP may not have a field for the
+    protocol because it's always TCP.
 
 The first value is the IntelMQ key,
 the second value is the row in the shadowserver csv.
@@ -83,6 +87,7 @@ def convert_host_and_url(value, row):
 
 
 def invalidate_zero(value):
+    """ Returns an int or None for empty strings or '0'. """
     if not value:
         return None
     elif int(value) != 0:
@@ -118,8 +123,8 @@ open_m_dns = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # mdns_name
         # mdns_ipv4
@@ -136,7 +141,7 @@ open_m_dns = {
         # http_target
         # http_port
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'exploit',
     },
 }
@@ -157,12 +162,12 @@ open_chargen = {
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
         ('response_size', 'size', int),
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.identifier': 'chargen',
         'classification.type': 'vulnerable service',
         'protocol.application': 'chargen',
@@ -184,16 +189,16 @@ open_tftp = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('size', int),
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'size', int),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # opcode
         # errocode
         # error
         # errormessage
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -215,19 +220,23 @@ sinkhole_http_drone = {
         ('destination.ip', 'dst_ip'),
         ('destination.asn', 'dst_asn'),
         ('destination.geolocation.cc', 'dst_geo'),
+        ('destination.fqdn', 'http_host'),
         # Other known fields which will go into "extra"
         ('user_agent', 'http_agent'),
         ('os.name', 'p0f_genre'),
         ('os.version', 'p0f_detail'),
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
-        # http_host
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # http_referer
         # http_referer_ip
         # http_referer_asn
         # http_referer_geo
     ],
-    'additional_fields': {
+    'constant_fields': {
+        # The feed does not include explicit information about the
+        # protocol, but since it is about HTTP the protocol is always
+        # tcp.
+        'protocol.transport': 'tcp',
         'classification.type': 'botnet drone',
     },
 }
@@ -255,16 +264,15 @@ microsoft_sinkhole = {
         ('os.name', 'p0f_genre'),
         ('os.version', 'p0f_detail'),
         ('destination.url', 'http_host', convert_host_and_url, True),
-        ('url', lambda x: None),  # remove URl here, is included in above conversion
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
-        # http_host
-        ('http_referer', validate_to_none),
+        ('', 'url', lambda x: None),  # remove URl here, is included in above conversion
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
+        ('extra.', 'http_referer', validate_to_none),
         # http_referer_ip
         # http_referer_asn
         # http_referer_geo
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'botnet drone',
         'protocol.application': 'http',
     },
@@ -285,8 +293,8 @@ open_redis = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # version
         # git_sha1
@@ -303,7 +311,7 @@ open_redis = {
         # connected_clients
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -323,15 +331,15 @@ open_portmapper = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # programs
         # mountd_port
         # exports
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'exploit',
     },
 }
@@ -352,17 +360,17 @@ open_ipmi = {
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
         # ipmi_version
-        ('none_auth', convert_bool),
-        ('md2_auth', convert_bool),
-        ('md5_auth', convert_bool),
-        ('passkey_auth', convert_bool),
-        ('oem_auth', convert_bool),
+        ('extra.', 'none_auth', convert_bool),
+        ('extra.', 'md2_auth', convert_bool),
+        ('extra.', 'md5_auth', convert_bool),
+        ('extra.', 'passkey_auth', convert_bool),
+        ('extra.', 'oem_auth', convert_bool),
         # defaultkg
-        ('permessage_auth', convert_bool),
-        ('userlevel_auth', convert_bool),
-        ('usernames', convert_bool),
-        ('nulluser', convert_bool),
-        ('anon_login', convert_bool),
+        ('extra.', 'permessage_auth', convert_bool),
+        ('extra.', 'userlevel_auth', convert_bool),
+        ('extra.', 'usernames', convert_bool),
+        ('extra.', 'nulluser', convert_bool),
+        ('extra.', 'anon_login', convert_bool),
         # error
         # deviceid
         # devicerev
@@ -373,7 +381,7 @@ open_ipmi = {
         # productid
         # productname
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -394,13 +402,13 @@ open_qotd = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # quote
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
         'classification.identifier': 'qotd',
         'protocol.application': 'qotd',
@@ -423,8 +431,8 @@ open_ssdp = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # header
         # systime
@@ -438,7 +446,7 @@ open_ssdp = {
         # nt
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'exploit',
     },
 }
@@ -458,14 +466,14 @@ open_snmp = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
-        ('version', int),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
+        ('extra.', 'version', int),
         # sysdesc
         # sysname
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
         'protocol.application': 'snmp',
         'classification.identifier': 'snmp',
@@ -488,8 +496,8 @@ open_mssql = {
         ('source.geolocation.city', 'city'),
         ('source.local_hostname', 'server_name'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # version
         # instance_name
@@ -498,7 +506,7 @@ open_mssql = {
         # response_lenght
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -519,8 +527,8 @@ open_mongo_db = {
         ('source.geolocation.city', 'city'),
         ('source.account', 'username'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # tag
         # version
         # gitversion
@@ -534,7 +542,7 @@ open_mongo_db = {
         # visible_databases
         # sector
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -560,7 +568,7 @@ open_net_bios = {
         # mac_address
         # workgroup
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -585,7 +593,7 @@ open_elasticsearch = {
         # p0f_genre
         # p0f_detail
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -605,8 +613,8 @@ dns_open_resolvers = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
         # Other known fields which will go into "extra"
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
         # elasticsearch
         # version
         # ok
@@ -618,7 +626,7 @@ dns_open_resolvers = {
         # build_snaphost
         # lucene_version
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -638,7 +646,7 @@ ntp_monitor = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -658,7 +666,7 @@ ssl_scan = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -678,7 +686,7 @@ open_memcached = {
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'vulnerable service',
     },
 }
@@ -710,10 +718,10 @@ botnet_drone_hadoop = {
         ('user_agent', 'agent'),
         ('os.name', 'p0f_genre'),
         ('os.version', 'p0f_detail'),
-        ('naics', invalidate_zero),
-        ('sic', invalidate_zero),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
     ],
-    'additional_fields': {
+    'constant_fields': {
         'classification.type': 'botnet drone',
     },
 }

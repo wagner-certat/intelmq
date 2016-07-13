@@ -137,12 +137,7 @@ class ShadowserverParserBot(ParserBot):
             if len(item) > 2:
                 conv = item[2]
             else:
-                if callable(item[1]):  # short notation
-                    intelmqkey = None
-                    shadowkey = item[0]
-                    conv = item[1]
-                else:
-                    conv = None
+                conv = None
             raw_value = row.get(shadowkey)
             value = raw_value
 
@@ -153,7 +148,7 @@ class ShadowserverParserBot(ParserBot):
                     value = conv(raw_value)
 
             if value is not None:
-                if not intelmqkey:
+                if intelmqkey == 'extra.':
                     extra[shadowkey] = value
                     fields.remove(shadowkey)
                     continue
@@ -172,8 +167,8 @@ class ShadowserverParserBot(ParserBot):
             else:
                 fields.remove(shadowkey)
 
-        # Now add additional fields.
-        for key, value in conf.get('additional_fields', {}).items():
+        # Now add additional constant fields.
+        for key, value in conf.get('constant_fields', {}).items():
             event.add(key, value)
 
         raw_line = {k: self.conv_csv_shadowserver(v) for k, v in row.items()}
