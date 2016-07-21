@@ -174,7 +174,6 @@ open_chargen = {
         ('source.port', 'port')
     ],
     'optional_fields': [
-        ('source.reverse_dns', 'hostname'),
         ('protocol.transport', 'protocol'),
         ('source.reverse_dns', 'hostname'),
         ('source.asn', 'asn'),
