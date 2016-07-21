@@ -189,7 +189,7 @@ class Message(dict):
             if not re.search(config['regex'], str(value)):
                 return (False, 'regex did not match.')
         if 'iregex' in config:
-            if not re.search(config['regex'], str(value), re.IGNORECASE):
+            if not re.search(config['iregex'], str(value), re.IGNORECASE):
                 return (False, 'regex (case insensitive) did not match.')
         return (True, )
 
