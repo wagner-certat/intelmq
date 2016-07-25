@@ -50,8 +50,8 @@ def get_feed(feedname):
         "NTP-Monitor": ntp_monitor,
         "DNS-open-resolvers": dns_open_resolvers,  # TODO Check implementation.
         "Open-Elasticsearch": open_elasticsearch,
-        "Open-NetBIOS": open_net_bios,  # TODO Check implementation.
-        "Open-Mongo DB": open_mongo_db,  # TODO Check implementation.
+        "Open-NetBIOS": open_netbios,  # TODO Check implementation.
+        "Open-MongoDB": open_mongodb,  # TODO Check implementation.
         "Open-MSSQL": open_mssql,  # TODO Check implementation.
         "Open-SNMP": open_snmp,
         "Open-SSDP": open_ssdp,  # TODO Check implementation.
@@ -324,7 +324,7 @@ open_redis = {
         # Other known fields which will go into "extra"
         ('extra.', 'naics', invalidate_zero),
         ('extra.', 'sic', invalidate_zero),
-        # tag
+        ('extra.', 'tag'),
         # version
         # git_sha1
         # git_dirty_flag
@@ -604,7 +604,7 @@ open_mongo_db = {
 }
 
 # https://www.shadowserver.org/wiki/pmwiki.php/Services/Open-NetBIOS
-open_net_bios = {
+open_netbios = {
     'required_fields': [
         ('time.source', 'timestamp', add_UTC_to_timestamp),
         ('source.ip', 'ip'),
@@ -755,6 +755,9 @@ ssl_scan = {
 }
 
 # https://www.shadowserver.org/wiki/pmwiki.php/Services/Open-Memcached
+# "timestamp","ip","protocol","port","hostname","tag","version","asn","geo","region","city","naics","sic","pid","pointer_size","uptime","time","curr_connections","total_connections"
+# "2015-01-22 01:30:25","167.160.165.190","tcp",11211,,"memcached","1.4.20",62639,"US","CALIFORNIA","LOS ANGELES",0,0,787,64,87136,"2015-01-22 01:30:26",10,13
+
 open_memcached = {
     'required_fields': [
         ('time.source', 'timestamp', add_UTC_to_timestamp),
@@ -768,6 +771,14 @@ open_memcached = {
         ('source.geolocation.cc', 'geo'),
         ('source.geolocation.region', 'region'),
         ('source.geolocation.city', 'city'),
+        ('extra.', 'naics', invalidate_zero),
+        ('extra.', 'sic', invalidate_zero),
+        ('extra.', 'pid'),
+        ('extra.', 'pointer_size'),
+        ('extra.', 'uptime'),
+        ('extra.', 'time'),
+        ('extra.', 'curr_connections'),
+        ('extra.', 'total_connections'),
     ],
     'constant_fields': {
         'classification.type': 'vulnerable service',

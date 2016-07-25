@@ -460,7 +460,7 @@ class ParserBot(Bot):
                 # filter out None
                 events = list(filter(bool, self.parse_line(line, report)))
             except Exception as exc:
-                self.logger.exception('Failed to parse line.')
+                self.logger.exception('Failed to parse line: {!r}'.format(line))
                 self.__failed.append((exc, line))
             else:
                 self.send_message(*events)
