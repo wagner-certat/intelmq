@@ -321,10 +321,7 @@ class Bot(object):
         new_dump_data[timestamp]["source_queue"] = self.__source_queues
         new_dump_data[timestamp]["traceback"] = error_traceback
 
-        if (type(message) == str):
-            new_dump_data[timestamp]["message"] = message
-        else:
-            new_dump_data[timestamp]["message"] = message.serialize()
+        new_dump_data[timestamp]["message"] = message.serialize()
 
         try:
             with open(dump_file, 'r') as fp:
@@ -417,6 +414,13 @@ class Bot(object):
 
 class ParserBot(Bot):
 
+    def __init__(self, bot_id):
+        super(ParserBot, self).__init__(bot_id=bot_id)
+        if self.__class__.__name__ == 'ParserBot':
+            self.logger.error('ParserBot can\'t be started itself. '
+                              'Possible Misconfiguration.')
+            self.stop()
+
     def parse_csv(self, report):
         """
         A basic CSV parser.
@@ -459,14 +463,22 @@ class ParserBot(Bot):
             try:
                 # filter out None
                 events = list(filter(bool, self.parse_line(line, report)))
+<<<<<<< HEAD
             except Exception as exc:
                 self.logger.exception('Failed to parse line: {!r}'.format(line))
                 self.__failed.append((exc, line))
+=======
+            except Exception:
+                self.logger.exception('Failed to parse line.')
+                self.__failed.append((traceback.format_exc(), line))
+>>>>>>> c90ff5701c46d6e570cd5074f71464778cccaaea
             else:
                 self.send_message(*events)
 
         for exc, line in self.__failed:
-            self._dump_message(exc, self.recover_line(line))
+            report_dump = report.copy()
+            report_dump.update('raw', self.recover_line(line))
+            self._dump_message(exc, report_dump)
 
         self.acknowledge_message()
 
