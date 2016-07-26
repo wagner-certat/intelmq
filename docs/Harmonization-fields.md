@@ -44,8 +44,8 @@ Harmonization field names
 |Malware Hash|malware.hash.sha1|String|A string depicting a SHA1 checksum for a file, be it a malware sample for example. Includes hash type according to https://en.wikipedia.org/wiki/Crypt_%28C%29|
 |Malware|malware.name|MalwareName|A malware family name in lower case.|
 |Malware|malware.version|String|A version string for an identified artifact generation, e.g. a crime-ware kit.|
-||misp_uuid|UUID|MISP - Malware Information Sharing Platform & Threat Sharing UUID.|
-||notify|Boolean|If mail will be sent out to affected or responsible contact.|
+||misp.event_uuid|UUID|MISP - Malware Information Sharing Platform & Threat Sharing event UUID.|
+||misp.attribute_uuid|UUID|MISP - Malware Information Sharing Platform & Threat Sharing attribute UUID.|
 |Protocol|protocol.application|String|e.g. vnc, ssh, sip, irc, http or p2p.|
 |Protocol|protocol.transport|String|e.g. tcp, udp, icmp.|
 ||raw|Base64|The original line of the event from encoded in base64.|
@@ -53,12 +53,7 @@ Harmonization field names
 ||rtir_investigation_id|Integer|Request Tracker Incident Response investigation id.|
 ||rtir_report_id|Integer|Request Tracker Incident Response incident report id.|
 ||screenshot_url|URL|Some source may report URLs related to a an image generated of a resource without any metadata. Or an URL pointing to resource, which has been rendered into a webshot, e.g. a PNG image and the relevant metadata related to its retrieval/generation.|
-<<<<<<< HEAD
-||sent_at|DateTime|Time when the report has been sent to the responsible recipient.|
-|Source|source.abuse_contact|String|Abuse contact for source address. TODO: list?|
-=======
 |Source|source.abuse_contact|String|Abuse contact for source address. A comma separated list.|
->>>>>>> master
 |Source|source.account|String|An account name or email address, which has been identified to relate to the source of an abuse event.|
 |Source|source.allocated|DateTime|Allocation date corresponding to bgp prefix.|
 |Source|source.as_name|String|The autonomous system name from which the connection originated.|
