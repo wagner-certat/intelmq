@@ -49,9 +49,7 @@ Harmonization field names
 |Protocol|protocol.application|LowercaseString|e.g. vnc, ssh, sip, irc, http or p2p.|
 |Protocol|protocol.transport|LowercaseString|e.g. tcp, udp, icmp.|
 ||raw|Base64|The original line of the event from encoded in base64.|
-||rtir_incident_id|Integer|Request Tracker Incident Response incident id.|
-||rtir_investigation_id|Integer|Request Tracker Incident Response investigation id.|
-||rtir_report_id|Integer|Request Tracker Incident Response incident report id.|
+||rtir_id|Integer|Request Tracker Incident Response incident id.|
 ||screenshot_url|URL|Some source may report URLs related to a an image generated of a resource without any metadata. Or an URL pointing to resource, which has been rendered into a webshot, e.g. a PNG image and the relevant metadata related to its retrieval/generation.|
 |Source|source.abuse_contact|LowercaseString|Abuse contact for source address. A comma separated list.|
 |Source|source.account|String|An account name or email address, which has been identified to relate to the source of an abuse event.|
@@ -100,6 +98,7 @@ Sanitation encodes to base64 and accepts binary and unicode strings.
 
 
 
+### Boolean
 
 Boolean type. Without sanitation only python bool is accepted.
 
