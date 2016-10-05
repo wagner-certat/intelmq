@@ -128,7 +128,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         try:
             self.execute(lib.QUERY_OPEN_TAXONOMIES)
             taxonomies = [x['classification.taxonomy'] for x in self.cur.fetchall()]
-            self.logger.info("All taxonomies: " + ",".join(taxonomies))
+            self.logger.info("All taxonomies: " + ", ".join(taxonomies))
             for taxonomy in taxonomies:
                 self.logger.info('Handling taxonomy {!r}.'.format(taxonomy))
                 if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
@@ -196,6 +196,39 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                     except IndexError:
                         # Bug in RT/python-rt
                         pass
+                else:
+                    self.logger.info('Not all investigations completed -> Can\'t be resolved!')
+            self.execute(lib.QUERY_HALF_PROC_INCIDENTS)
+            query = [(x['rtir_incident_id'], x['classification.taxonomy'])
+                     for x in self.cur.fetchall()]
+            self.logger.info("All half processed incidents and taxonomy: " + str(query))
+            for incident_id, taxonomy in query:
+                self.logger.info('Handling incident {!r} and taxonomy {!r}.'.format(incident_id, taxonomy))
+                if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
+                    self.logger.error('No subject defined for %r.' % taxonomy)
+                    continue
+
+                self.execute(lib.QUERY_DISTINCT_CONTACTS_BY_INCIDENT, (incident_id, ))
+                contacts = [x['source.abuse_contact'] for x in self.cur.fetchall()]
+
+                inv_results = []
+                for contact in contacts:
+                    self.logger.info('Handling contact ' + contact)
+                    self.execute(lib.QUERY_EVENTS_BY_ASCONTACT_INCIDENT,
+                                 (incident_id, contact, ))
+                    data = self.cur.fetchall()
+                    inv_results.append(self.send(taxonomy, contact, data, incident_id))
+
+                if all(inv_results):
+                    try:
+                        if not self.dryrun and not self.rt.edit_ticket(incident_id,
+                                                                       Status='resolved'):
+                            self.logger.error('Could not close incident {}.'.format(incident_id))
+                    except IndexError:
+                        # Bug in RT/python-rt
+                        pass
+                else:
+                    self.logger.info('Not all investigations completed -> Can\'t be resolved!')
 
         finally:
             self.rt.logout()
@@ -245,9 +278,8 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         query = self.shrink_dict(query)
         ids = list(str(row['id']) for row in query)
 
-        subject = ('{count} {tax} in your network: {date}'
-                   ''.format(count=len(query),
-                             date=datetime.datetime.now().strftime('%Y-%m-%d'),
+        subject = ('{tax} in your network: {date}'
+                   ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
                              tax=lib.SUBJECT[taxonomy]))
         text = self.get_text(taxonomy)
         if six.PY2:
@@ -380,6 +412,10 @@ Subject: {subj}
                 self.logger.error('Could not link Investigation to Incident.')
                 return False
 
+            self.executemany("UPDATE events SET rtir_investigation_id = %s WHERE id = %s",
+                             [(investigation_id, evid) for evid in ids])
+            self.logger.info('Linked events to investigation.')
+
         # CORRESPOND
         filename = '%s-%s.csv' % (datetime.datetime.now().strftime('%Y-%m-%d'), taxonomy)
         if self.zipme or len(query) > self.config['rt']['zip_threshold']:
@@ -411,10 +447,10 @@ Subject: {subj}
                     return False
                 self.logger.info('Correspondence added to Investigation.')
 
-            self.executemany("UPDATE events SET rtir_investigation_id = %s, "
-                             "sent_at = LOCALTIMESTAMP WHERE id = %s",
-                             [(investigation_id, evid) for evid in ids])
-            self.logger.info('Linked events to investigation.')
+            self.executemany("UPDATE events SET sent_at = LOCALTIMESTAMP WHERE "
+                             "rtir_investigation_id = %s",
+                             [(investigation_id, ) for evid in ids])
+            self.logger.info('Marked events as sent.')
         except:
             self.con.rollback()
             raise

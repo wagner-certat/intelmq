@@ -26,7 +26,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 __all__ = ['BASE_WHERE', 'CSV_FIELDS', 'EPILOG',
            'QUERY_DISTINCT_CONTACTS_BY_INCIDENT', 'QUERY_EVENTS_BY_ASCONTACT_INCIDENT',
            'QUERY_FEED_NAMES', 'QUERY_GET_TEXT', 'QUERY_IDENTIFIER_NAMES',
-           'QUERY_INSERT_CONTACT', 'QUERY_OPEN_EVENTS_BY_FEEDNAME',
+           'QUERY_INSERT_CONTACT', 'QUERY_OPEN_EVENTS_BY_FEEDNAME', 'QUERY_HALF_PROC_INCIDENTS',
            'QUERY_OPEN_EVENT_IDS_BY_TAXONOMY', 'QUERY_OPEN_EVENT_REPORTS_BY_TAXONOMY',
            'QUERY_OPEN_FEEDNAMES', 'QUERY_OPEN_TAXONOMIES', 'QUERY_TAXONOMY_NAMES',
            'QUERY_TEXT_NAMES', 'QUERY_TYPE_NAMES', 'QUERY_UPDATE_CONTACT', 'USAGE',
@@ -71,6 +71,8 @@ USAGE = '''
     intelmqcli --list-identifiers
     intelmqcli --list-taxonomies
     intelmqcli --taxonomy='taxonomy'
+    intelmqcli --type='type'
+    intelmqcli --identifier='identifier'
     intelmqcli --list-types
     intelmqcli --list-texts
     intelmqcli --text='boilerplate name'
@@ -188,6 +190,16 @@ WHERE
     "rtir_report_id" IS NOT NULL AND
     "rtir_incident_id" IS NULL AND
     "classification.taxonomy" = %s AND
+""" + BASE_WHERE
+QUERY_HALF_PROC_INCIDENTS = """
+SELECT
+    DISTINCT "rtir_incident_id",
+    "classification.taxonomy"
+FROM "events"
+WHERE
+    "rtir_report_id" IS NOT NULL AND
+    "rtir_incident_id" IS NOT NULL AND
+    rtir_investigation_id IS NULL AND
 """ + BASE_WHERE
 # PART 3: INVESTIGATIONS
 QUERY_DISTINCT_CONTACTS_BY_INCIDENT = """
@@ -312,6 +324,10 @@ class IntelMQCLIContollerTemplate():
                                  help='Select only events with given taxonomy.')
         self.parser.add_argument('-a', '--asn', type=int, nargs='+',
                                  help='Specify one or more AS numbers (integers) to process.')
+        self.parser.add_argument('--type', nargs='+',
+                                 help='Specify one or more classifications types to process.')
+        self.parser.add_argument('--identifier', nargs='+',
+                                 help='Specify one or more classifications identifiers to process.')
 
         self.parser.add_argument('-b', '--batch', action='store_true',
                                  help='Run in batch mode (defaults to "yes" to all).')
@@ -343,6 +359,12 @@ class IntelMQCLIContollerTemplate():
         if self.args.taxonomy:
             self.additional_where += """ AND "classification.taxonomy" = ANY(%s::VARCHAR[]) """
             self.additional_params += ('{' + ','.join(self.args.taxonomy) + '}', )
+        if self.args.type:
+            self.additional_where += """ AND "classification.type" = ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.type) + '}', )
+        if self.args.identifier:
+            self.additional_where += """ AND "classification.identifier" = ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.identifier) + '}', )
 
         with open('/etc/intelmq/intelmqcli.conf') as conf_handle:
             self.config = json.load(conf_handle)
@@ -392,8 +414,10 @@ class IntelMQCLIContollerTemplate():
         if extend:
             query = query + self.additional_where
             parameters = [param + self.additional_params for param in parameters]
-        if self.config['log_level'] == 'debug':
+        if self.config['log_level'].upper() == 'DEBUG':  # on other log levels we can skip the iteration
             for param in parameters:
                 self.logger.debug(self.cur.mogrify(query, param))
-        if not self.dryrun or query.strip().upper().startswith('SELECT'):
+            if not parameters:
+                self.logger.debug(self.cur.mogrify(query))
+        if not self.dryrun or query.strip().upper().startswith('SELECT'):  # no update in dry run
             self.cur.executemany(query, parameters)
