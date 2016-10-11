@@ -140,11 +140,15 @@ def main():
             info = dump_info(fname)
             print("{c:3}: {s:{l}} {i}".format(c=count, s=shortname, i=info,
                                               l=length))
-        botid = input(inverted('Which dump file to process (id or name)?') +
-                      ' ')
-        botid = botid.strip()
-        if botid == 'q' or not botid:
+        try:
+            botid = input(inverted('Which dump file to process (id or name)?') +
+                          ' ')
+        except EOFError:
             exit(0)
+        else:
+            botid = botid.strip()
+            if botid == 'q' or not botid:
+                exit(0)
         try:
             fname, botid = filenames[int(botid)]
         except ValueError:
@@ -156,9 +160,25 @@ def main():
     if not os.path.isfile(fname):
         print(bold('Given file does not exist: {}'.format(fname)))
         exit(1)
+
+    answer = None
     while True:
         info = dump_info(fname)
         print('Processing {}: {}'.format(bold(botid), info))
+
+        if info.startswith(str(red)):
+            available_opts = [item[0] for item in ACTIONS.values() if item[2]]
+            print('Restricted actions.')
+        else:
+            # don't display list after 'show' command
+            if not (answer and isinstance(answer, list) and answer[0] == 's'):
+                with open(fname, 'rt') as handle:
+                    content = json.load(handle)
+                meta = load_meta(content)
+                available_opts = [item[0] for item in ACTIONS.values()]
+                for count, line in enumerate(meta):
+                    print('{:3}: {} {}'.format(count, *line))
+
         # Determine bot status
         bot_status = ctl.bot_status(botid)
         if bot_status == 'running':
@@ -166,21 +186,17 @@ def main():
         elif bot_status == 'error':
             print(red('Attention: This bot is not defined!'))
 
-        if info.startswith(str(red)):
-            available_opts = [item[0] for item in ACTIONS.values() if item[2]]
-            print('Restricted actions.')
+        try:
+            answer = input(inverted(', '.join(available_opts) + '?') + ' ').split()
+        except EOFError:
+            break
         else:
-            with open(fname, 'rt') as handle:
-                content = json.load(handle)
-            meta = load_meta(content)
-            available_opts = [item[0] for item in ACTIONS.values()]
-            for count, line in enumerate(meta):
-                print('{:3}: {} {}'.format(count, *line))
-        answer = input(inverted(', '.join(available_opts) + '?') + ' ').split()
-        if not answer:
-            continue
-        if any([answer[0] == char for char in AVAILABLE_IDS]):
+            if not answer:
+                continue
+        if any([answer[0] == char for char in AVAILABLE_IDS]) and len(answer) > 1:
             ids = [int(item) for item in answer[1].split(',')]
+        else:
+            ids = []
         queue_name = None
         if answer[0] == 'a':
             # recover all -> recover all by ids
@@ -196,6 +212,10 @@ def main():
                 del content[meta[entry][0]]
             save_file(fname, content)
         elif answer[0] == 'r':
+            if bot_status == 'running':
+                # See https://github.com/certtools/intelmq/issues/574
+                print(red('Recovery for running bots not possible.'))
+                continue
             # recover entries
             default = utils.load_configuration(DEFAULTS_CONF_FILE)
             runtime = utils.load_configuration(RUNTIME_CONF_FILE)
@@ -208,7 +228,6 @@ def main():
                 else:
                     print('No message here, deleting entry.')
                     del content[key]
-                    save_file(fname, content)
                     continue
 
                 if queue_name is None:
@@ -225,8 +244,8 @@ def main():
                               ''.format(queue_name, traceback.format_exc())))
                 else:
                     del content[key]
-                    save_file(fname, content)
                     print(green('Recovered dump {}.'.format(i)))
+            save_file(fname, content)
             if not content:
                 os.remove(fname)
                 print('Deleted empty file {}'.format(fname))
