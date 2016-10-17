@@ -51,6 +51,7 @@ CREATE TABLE events (
     "rtir_report_id" integer,
     "screenshot_url" text,
     "sent_at" timestamp with time zone,
+    "shareable_extra_info" json,
     "source.abuse_contact" text,
     "source.account" text,
     "source.allocated" timestamp with time zone,
