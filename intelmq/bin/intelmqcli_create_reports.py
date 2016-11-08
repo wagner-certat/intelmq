@@ -105,9 +105,10 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                     self.logger.error('Could not correspond with file.')
                     return
 
-            self.executemany("UPDATE events SET rtir_report_id = %s WHERE id = %s",
-                             [(report_id, row['id']) for row in feeddata])
-            self.con.commit()
+            if not self.dryrun:
+                self.executemany("UPDATE events SET rtir_report_id = %s WHERE id = %s",
+                                 [(report_id, row['id']) for row in feeddata])
+                self.con.commit()
             self.logger.info('Linked events to report.')
 
 
