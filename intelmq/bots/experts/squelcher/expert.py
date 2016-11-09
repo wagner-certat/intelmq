@@ -7,6 +7,8 @@ from ipaddress import ip_address, ip_network
 import psycopg2
 import sys
 
+import netaddr
+
 from intelmq.lib.bot import Bot
 from intelmq.lib.utils import load_configuration
 
@@ -69,12 +71,15 @@ class SquelcherExpertBot(Bot):
         ttl = None
         for ruleset in self.config:
             condition = ruleset[0].copy()
-            in_net = True
+            conditions = []
             if 'source.network' in condition and 'source.ip' in event:
-                in_net = (ip_address(event['source.ip']) in
-                          ip_network(condition['source.network']))
+                conditions.append(ip_address(event['source.ip']) in
+                                  ip_network(condition['source.network']))
                 del condition['source.network']
-            if set(condition.items()).issubset(event.items()) and in_net:
+            if 'source.iprange' in condition and 'source.ip' in event:
+                conditions.append(event['source.ip'] in netaddr.IPRange(*condition['source.iprange']))
+                del condition['source.iprange']
+            if set(condition.items()).issubset(event.items()) and all(conditions):
                 ttl = ruleset[1]['ttl']
                 break
 
@@ -83,15 +88,18 @@ class SquelcherExpertBot(Bot):
                                     event['source.ip']))
 
         try:
-            self.cur.execute(SELECT_QUERY, (ttl, event['classification.type'],
-                                            event['classification.identifier'],
-                                            event['source.ip']))
+            if ttl >= 0:
+                self.cur.execute(SELECT_QUERY, (ttl, event['classification.type'],
+                                                event['classification.identifier'],
+                                                event['source.ip']))
+                result = self.cur.fetchone()[0]
+            else:  # never notify with ttl -1
+                result = 1
         except (psycopg2.InterfaceError, psycopg2.InternalError,
                 psycopg2.OperationalError, AttributeError):
             self.logger.exception('Cursor has been closed, connecting again.')
             self.init()
         else:
-            result = self.cur.fetchone()[0]
             if result == 0:
                 notify = True
             else:
