@@ -461,7 +461,7 @@ Subject: {subj}
             try:
                 if not self.dryrun and not self.rt.edit_ticket(investigation_id,
                                                                Status='resolved'):
-                    self.logger.error('Could not close investigation {}.'.format(incident_id))
+                    self.logger.error('Could not close investigation {}.'.format(investigation_id))
             except IndexError:
                 # Bug in RT/python-rt
                 pass
