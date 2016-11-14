@@ -320,14 +320,24 @@ class IntelMQCLIContollerTemplate():
 
         self.parser.add_argument('-f', '--feed', nargs='+',
                                  help='Show only incidents reported by one of the given feeds.')
+        self.parser.add_argument('--skip-feed', nargs='+',
+                                 help='Skip incidents reported by one of the given feeds.')
         self.parser.add_argument('--taxonomy', nargs='+',
                                  help='Select only events with given taxonomy.')
+        self.parser.add_argument('--skip-taxonomy', nargs='+',
+                                 help='Skip events with given taxonomy.')
         self.parser.add_argument('-a', '--asn', type=int, nargs='+',
                                  help='Specify one or more AS numbers (integers) to process.')
+        self.parser.add_argument('--skip-asn', type=int, nargs='+',
+                                 help='Specify one or more AS numbers (integers) to skip.')
         self.parser.add_argument('--type', nargs='+',
                                  help='Specify one or more classifications types to process.')
+        self.parser.add_argument('--skip-type', nargs='+',
+                                 help='Specify one or more classifications types to skip.')
         self.parser.add_argument('--identifier', nargs='+',
                                  help='Specify one or more classifications identifiers to process.')
+        self.parser.add_argument('--skip-identifier', nargs='+',
+                                 help='Specify one or more classifications identifiers to skip.')
 
         self.parser.add_argument('-b', '--batch', action='store_true',
                                  help='Run in batch mode (defaults to "yes" to all).')
@@ -353,18 +363,33 @@ class IntelMQCLIContollerTemplate():
         if self.args.feed:
             self.additional_where += """ AND "feed.name" = ANY(%s::VARCHAR[]) """
             self.additional_params += ('{' + ','.join(self.args.feed) + '}', )
+        if self.args.skip_feed:
+            self.additional_where += """ AND "feed.name" != ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.skip_feed) + '}', )
         if self.args.asn:
             self.additional_where += """ AND "source.asn" = ANY(%s::INT[]) """
             self.additional_params += ('{' + ','.join(map(str, self.args.asn)) + '}', )
+        if self.args.skip_asn:
+            self.additional_where += """ AND "source.asn" != ANY(%s::INT[]) """
+            self.additional_params += ('{' + ','.join(map(str, self.args.skip_asn)) + '}', )
         if self.args.taxonomy:
             self.additional_where += """ AND "classification.taxonomy" = ANY(%s::VARCHAR[]) """
             self.additional_params += ('{' + ','.join(self.args.taxonomy) + '}', )
+        if self.args.skip_taxonomy:
+            self.additional_where += """ AND "classification.taxonomy" != ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.skip_taxonomy) + '}', )
         if self.args.type:
             self.additional_where += """ AND "classification.type" = ANY(%s::VARCHAR[]) """
             self.additional_params += ('{' + ','.join(self.args.type) + '}', )
+        if self.args.skip_type:
+            self.additional_where += """ AND "classification.type" != ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.skip_type) + '}', )
         if self.args.identifier:
             self.additional_where += """ AND "classification.identifier" = ANY(%s::VARCHAR[]) """
             self.additional_params += ('{' + ','.join(self.args.identifier) + '}', )
+        if self.args.skip_identifier:
+            self.additional_where += """ AND "classification.identifier" != ANY(%s::VARCHAR[]) """
+            self.additional_params += ('{' + ','.join(self.args.skip_identifier) + '}', )
 
         with open('/etc/intelmq/intelmqcli.conf') as conf_handle:
             self.config = json.load(conf_handle)
