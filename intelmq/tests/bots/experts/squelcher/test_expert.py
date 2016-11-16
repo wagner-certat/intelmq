@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import pkg_resources
 import psycopg2
 import unittest
 
 from intelmq import RUNTIME_CONF_FILE
-import intelmq.lib.harmonization as harmonization
 import intelmq.lib.test as test
 import intelmq.lib.utils as utils
 from intelmq.bots.experts.squelcher.expert import SquelcherExpertBot
@@ -23,7 +23,6 @@ INPUT1 = {"__type": "Event",
           "notify": False,
           "source.asn": 0,
           "source.ip": "192.0.2.1",
-          "time.observation": harmonization.DateTime.generate_datetime_now(),
           "feed.name": "Example Feed",
           }
 
@@ -66,6 +65,22 @@ del INPUT8['source.asn']
 OUTPUT8 = INPUT8.copy()
 OUTPUT8['notify'] = False
 
+INPUT_INFINITE = {"__type": "Event",
+                  "classification.identifier": "zeus",
+                  "classification.type": "botnet drone",
+                  "source.asn": 12312,
+                  "source.ip": "192.0.2.1",
+                  }
+OUTPUT_INFINITE = INPUT_INFINITE.copy()
+OUTPUT_INFINITE['notify'] = False
+
+INPUT_RANGE = {"__type": "Event",
+               "classification.identifier": "zeus",
+               "classification.type": "botnet drone",
+               "source.asn": 789,
+               "source.ip": "10.0.0.10",
+               }
+
 
 class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     """
@@ -80,8 +95,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
             cls.sysconfig = (utils.load_configuration(RUNTIME_CONF_FILE)
                              ['Expert']['Squelcher'])
         except:
-            cls.sysconfig = {"configuration_path": "/opt/intelmq/etc/"
-                                                   "squelcher.conf",
+            cls.sysconfig = {"configuration_path": pkg_resources.resource_filename('intelmq',
+                                                                                   'etc/squelcher.conf'),
                              "host": "localhost",
                              "port": 5432,
                              "database": "intelmq",
@@ -188,6 +203,16 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
         self.input_message = INPUT8
         self.run_bot()
         self.assertMessageEqual(0, OUTPUT8)
+
+    def test_infinite(self):
+        self.input_message = INPUT_INFINITE
+        self.run_bot()
+        self.assertMessageEqual(0, OUTPUT_INFINITE)
+
+    def test_iprange(self):
+        self.input_message = INPUT_RANGE
+        self.run_bot()
+        self.assertLogMatches('Found TTL 72643 for', levelname='DEBUG')
 
     @classmethod
     def tearDownClass(cls):
