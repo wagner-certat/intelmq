@@ -447,9 +447,8 @@ Subject: {subj}
                     return False
                 self.logger.info('Correspondence added to Investigation.')
 
-            self.executemany("UPDATE events SET sent_at = LOCALTIMESTAMP WHERE "
-                             "rtir_investigation_id = %s",
-                             [(investigation_id, ) for evid in ids])
+            self.execute("UPDATE events SET sent_at = LOCALTIMESTAMP WHERE "
+                         "rtir_investigation_id = %s", (investigation_id, ))
             self.logger.info('Marked events as sent.')
         except:
             self.con.rollback()
@@ -461,7 +460,7 @@ Subject: {subj}
             try:
                 if not self.dryrun and not self.rt.edit_ticket(investigation_id,
                                                                Status='resolved'):
-                    self.logger.error('Could not close investigation {}.'.format(incident_id))
+                    self.logger.error('Could not close investigation {}.'.format(investigation_id))
             except IndexError:
                 # Bug in RT/python-rt
                 pass

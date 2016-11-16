@@ -393,6 +393,16 @@
                 "overwrite_cc": false
             }
         },
+        "Copy Extra": {
+            "description": "Copies a list of values from `extra` to `shareable_extra_info`.",
+            "module": "intelmq.experts.copy_extra.expert",
+            "parameters": {
+                "keys": [
+                    "deviceid",
+                    "firmwarerev"
+                ]
+            }
+        },
         "Cymru Whois": {
             "description": "Cymry Whois (IP to ASN) is the bot responsible to add network information to the events (BGP, ASN, AS Name, Country, etc..).",
             "module": "intelmq.bots.experts.cymru_whois.expert",
