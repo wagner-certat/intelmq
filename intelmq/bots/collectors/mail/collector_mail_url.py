@@ -3,14 +3,15 @@
 import re
 import sys
 
-try:
-    import imbox
-except ImportError:
-    imbox = None
 import requests
 
 from intelmq.lib.bot import CollectorBot
 from intelmq.lib.message import Report
+
+try:
+    import imbox
+except ImportError:
+    imbox = None
 
 
 class MailURLCollectorBot(CollectorBot):
@@ -34,8 +35,6 @@ class MailURLCollectorBot(CollectorBot):
                         not re.search(self.parameters.subject_regex,
                                       message.subject)):
                     continue
-
-                self.logger.info("Reading email report")
 
                 for body in message.body['plain']:
                     match = re.search(self.parameters.url_regex, str(body))
@@ -65,7 +64,7 @@ class MailURLCollectorBot(CollectorBot):
 
                         self.http_header['User-agent'] = self.parameters.http_user_agent
 
-                        self.logger.info("Downloading report from %s" % url)
+                        self.logger.info("Downloading report from %r." % url)
                         resp = requests.get(url=url,
                                             auth=self.auth, proxies=self.proxy,
                                             headers=self.http_header,
@@ -85,7 +84,7 @@ class MailURLCollectorBot(CollectorBot):
                         # so other instances watching this mailbox will still
                         # check it.
                         mailbox.mark_seen(uid)
-                self.logger.info("Email report read")
+                self.logger.info("Email report read.")
         mailbox.logout()
 
 

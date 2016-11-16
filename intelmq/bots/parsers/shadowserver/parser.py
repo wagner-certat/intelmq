@@ -10,18 +10,16 @@ which holds information on how to treat certain shadowserverfeeds.
 Most, if not all, feeds from shadowserver are in csv format.
 This parser will only work with those.
 """
+import copy
 import csv
 import io
 import sys
-import copy
-
-from intelmq.lib import utils
-from intelmq.lib.bot import ParserBot
-from intelmq.lib.message import Event
-
-from intelmq.lib.exceptions import InvalidValue, InvalidKey
 
 import intelmq.bots.parsers.shadowserver.config as config
+from intelmq.lib import utils
+from intelmq.lib.bot import ParserBot
+from intelmq.lib.exceptions import InvalidKey, InvalidValue
+from intelmq.lib.message import Event
 
 
 class ShadowserverParserBot(ParserBot):
@@ -38,10 +36,15 @@ class ShadowserverParserBot(ParserBot):
 
         # Set a switch if the parser shall reset the feed.name,
         # code and feedurl for this event
-        self.override = False
-        if hasattr(self.parameters, 'override'):
-            if self.parameters.override:
-                self.override = True
+        self.overwrite = False
+        if hasattr(self.parameters, 'override'):  # TODOv1.1: remove
+            self.logger.error('Parameter "override" is deprecated, '
+                              'it is now called "overwrite". Stopping now. '
+                              '(This warning will be removed before v1.1.)')
+            self.stop()
+        if hasattr(self.parameters, 'overwrite'):
+            if self.parameters.overwrite:
+                self.overwrite = True
 
         # Already warned about deprecation
         self.depr_warning = False
@@ -77,10 +80,10 @@ class ShadowserverParserBot(ParserBot):
         # one level below the "extra root"
         # e.g.: extra {'cc_dns': '127.0.0.1'}
 
-        # set feed.name and code, honor the override parameter
+        # set feed.name and code, honor the overwrite parameter
 
         if hasattr(self.parameters, 'feedname'):
-            if 'feed.name' in event and self.override:
+            if 'feed.name' in event and self.overwrite:
                 event.add('feed.name', self.parameters.feedname, force=True)
             elif 'feed.name' not in event:
                 event.add('feed.name', self.parameters.feedname)
@@ -115,7 +118,7 @@ class ShadowserverParserBot(ParserBot):
             intelmqkey, shadowkey = item[:2]
             if shadowkey not in fields:  # key does not exist in data (not even in the header)
                 self.logger.warning('Optional key {!r} not found data. Possible change in data'
-                                    ' format or misconfiguration.')
+                                    ' format or misconfiguration.'.format(shadowkey))
                 continue
             if len(item) > 2:
                 conv_func = item[2]
@@ -159,13 +162,6 @@ class ShadowserverParserBot(ParserBot):
 
         # Now add additional constant fields.
         dict.update(event, conf.get('constant_fields', {}))  # TODO: rewrite in 1.0
-        if 'feed.code' in conf.get('constant_fields', {}).keys() and not self.depr_warning:
-            self.depr_warning = True
-            # could not get this working with logging.captureWarnings(True) :(
-            # TODO: remove from config 1.0
-            self.logger.warn('`feed.code` will be removed from the constant_fields in '
-                             'default config in favor of the `code` parameter in collectors '
-                             'in 1.0!')
 
         event.add('raw', self.recover_line(row))
 
