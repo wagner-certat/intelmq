@@ -114,18 +114,31 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
                                    )
         cls.con.autocommit = True
         cls.cur = cls.con.cursor()
-        cls.cur.execute("TRUNCATE TABLE {}".format(cls.sysconfig['table']))
-        global INSERT_QUERY
-        INSERT_QUERY = INSERT_QUERY.format(table=cls.sysconfig['table'])
         cls.truncate(cls)
 
     def truncate(self):
         self.cur.execute("TRUNCATE TABLE {}".format(self.sysconfig['table']))
 
+    def insert(self, classification_identifier, classification_type, notify, source_asn, source_ip,
+               time_source, sent_at=None):
+        if sent_at is not None:
+            append = 'LOCALTIMESTAMP + INTERVAL %s second'
+        else:
+            append = '%s'
+        query = '''
+INSERT INTO {table}(
+    "classification.identifier", "classification.type", notify, "source.asn",
+    "source.ip", "time.source", "sent_at"
+) VALUES (%s, %s, %s, %s, %s,
+    LOCALTIMESTAMP + INTERVAL %s second,
+    {append})
+'''.format(table=self.sysconfig['table'], append=append)
+        self.cur.execute(query, (classification_identifier, classification_type, notify,
+                                 source_asn, source_ip, time_source, sent_at))
+
     def test_ttl_1(self):
         "event exists in db -> squelch"
-        query_data = ('zeus', 'botnet drone', True, 0, '192.0.2.1', '0', '0')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('zeus', 'botnet drone', True, 0, '192.0.2.1', '0')
         self.input_message = INPUT1
         self.run_bot()
         self.truncate()
@@ -134,9 +147,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     def test_ttl_2(self):
         "event in db is too old -> notify"
-        query_data = ('https', 'vulnerable service', True, 0, '192.0.2.1',
-                      '- 01:45', '- 01:45')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('https', 'vulnerable service', True, 0, '192.0.2.1',
+                    '- 01:45')
         self.input_message = INPUT2
         self.run_bot()
         self.truncate()
@@ -145,9 +157,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     def test_ttl_2h_squelch(self):
         "event is in db -> squelch"
-        query_data = ('https', 'vulnerable service', True, 0, '192.0.2.4',
-                      '- 01:45', '- 01:45')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('https', 'vulnerable service', True, 0, '192.0.2.4',
+                    '- 01:45')
         self.input_message = INPUT3
         self.run_bot()
         self.truncate()
@@ -157,9 +168,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     def test_network_match(self):
         """event is in db without notify -> notify
         find ttl based on network test"""
-        query_data = ('openresolver', 'vulnerable service', False, 0,
-                      '198.51.100.5', '- 20:00', '- 20:00')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('openresolver', 'vulnerable service', False, 0,
+                    '198.51.100.5', '- 20:00')
         self.input_message = INPUT5
         self.run_bot()
         self.truncate()
@@ -169,9 +179,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     def test_network_match3(self):
         """event is in db -> squelch
         find ttl based on network test"""
-        query_data = ('openresolver', 'vulnerable service', True, 0,
-                      '198.51.100.5', '- 25:00', '- 25:00')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('openresolver', 'vulnerable service', True, 0,
+                    '198.51.100.5', '- 25:00', '- 25:00')
         self.input_message = INPUT5
         self.run_bot()
         self.truncate()
@@ -180,9 +189,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     def test_address_match1(self):
         "event in db is too old -> notify"
-        query_data = ('openresolver', 'vulnerable service', True, 0,
-                      '198.51.100.45', '- 25:00', '- 25:00')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('openresolver', 'vulnerable service', True, 0,
+                    '198.51.100.45', '- 25:00', '- 25:00')
         self.input_message = INPUT6
         self.run_bot()
         self.truncate()
@@ -191,9 +199,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     def test_address_match2(self):
         "event is in db -> squelch"
-        query_data = ('openresolver', 'vulnerable service', True, 0,
-                      '198.51.100.45', '- 20:00', '- 20:00')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('openresolver', 'vulnerable service', True, 0,
+                    '198.51.100.45', '- 20:00', '- 20:00')
         self.input_message = INPUT6
         self.run_bot()
         self.truncate()
@@ -202,9 +209,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     def test_ttl_other_ident(self):
         "other event in db -> notify"
-        query_data = ('https', 'vulnerable service', True, 0, '198.51.100.5',
-                      '- 01:45', '- 01:45')
-        self.cur.execute(INSERT_QUERY, query_data)
+        self.insert('https', 'vulnerable service', True, 0, '198.51.100.5',
+                    '- 01:45', '- 01:45')
         self.input_message = INPUT4
         self.run_bot()
         self.truncate()
@@ -241,6 +247,24 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
         self.run_bot()
         self.truncate()
         self.assertLogMatches('Found TTL 72643 for', levelname='DEBUG')
+
+    def test_older_than_2days(self):
+        """event exists, but is older than 2 days and has not been sent -> notify """
+        self.insert('openresolver', 'vulnerable service', True, 0, '198.51.100.5', '- 259200')
+        self.input_message = INPUT5
+        self.run_bot()
+        self.truncate()
+        self.assertLogMatches('Found TTL 115200 for', levelname='DEBUG')
+        self.assertMessageEqual(0, INPUT5)
+
+    def test_younger_than_2days(self):
+        """event exists, is younger than 2 days and has not been sent -> squelch """
+        self.insert('openresolver', 'vulnerable service', True, 0, '198.51.100.5', '- 86400')
+        self.input_message = INPUT5
+        self.run_bot()
+        self.truncate()
+        self.assertLogMatches('Found TTL 115200 for', levelname='DEBUG')
+        self.assertMessageEqual(0, OUTPUT5)
 
     @classmethod
     def tearDownClass(cls):
