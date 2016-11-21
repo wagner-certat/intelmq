@@ -20,8 +20,15 @@ WHERE
 "classification.type" = %s AND
 "classification.identifier" = %s AND
 "source.ip" = %s AND
-notify IS TRUE
+notify IS TRUE AND
+("time.source" + INTERVAL '2 DAYS' >= LOCALTIMESTAMP OR
+ (sent_at IS NOT NULL AND "time.source" + INTERVAL '2 DAYS' < LOCALTIMESTAMP)
+)
 '''
+"""
+If the event in the DB is older than 2 days, then we also check if it has been sent out.
+If this is not the case, we assume the event will be sent out, thus we squelch the new event.
+"""
 
 
 class SquelcherExpertBot(Bot):
@@ -55,10 +62,6 @@ class SquelcherExpertBot(Bot):
     def process(self):
         event = self.receive_message()
 
-        if event is None:
-            self.acknowledge_message()
-            return
-
         if 'source.ip' not in event and 'source.fqdn' in event:
             event.add('notify', True, force=True)
             self.modify_end(event)
@@ -79,6 +82,7 @@ class SquelcherExpertBot(Bot):
             if 'source.iprange' in condition and 'source.ip' in event:
                 conditions.append(event['source.ip'] in netaddr.IPRange(*condition['source.iprange']))
                 del condition['source.iprange']
+            print(set(condition.items()), event.items(), set(condition.items()).issubset(event.items()), all(conditions))
             if set(condition.items()).issubset(event.items()) and all(conditions):
                 ttl = ruleset[1]['ttl']
                 break
@@ -108,7 +112,7 @@ class SquelcherExpertBot(Bot):
             event.add('notify', notify, force=True)
             self.modify_end(event)
 
-    def stop(self):
+    def shutdown(self):
         try:
             self.cur.close()
         except:
@@ -117,7 +121,6 @@ class SquelcherExpertBot(Bot):
             self.con.close()
         except:
             pass
-        super(SquelcherExpertBot, self).stop()
 
     def modify_end(self, event):
         self.send_message(event)
