@@ -72,7 +72,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         if self.args.compress_csv:
             self.compress_csv = True
         if self.args.text:
-            self.boilerplate = self.args.text
+            self.boilerplate = self.args.text[0]
         if self.args.zip:
             self.zipme = True
 
@@ -242,10 +242,9 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         text = None
         if self.boilerplate:  # get id from parameter
             text_id = self.boilerplate
-        else:  # get id from type (if only one type present)
-            self.query_get_text(text_id)
-            if self.cur.rowcount:
-                text = self.cur.fetchall()[0]['body']
+        self.query_get_text(text_id)
+        if self.cur.rowcount:
+            text = self.cur.fetchall()[0]['body']
         if not text:  # if all failed, get the default
             self.query_get_text(self.config['database']['default_key'])
             if self.cur.rowcount:
