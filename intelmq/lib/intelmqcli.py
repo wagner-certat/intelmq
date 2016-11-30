@@ -142,7 +142,7 @@ WHERE
 
 BASE_WHERE = """
 "notify" = TRUE AND
-"time.source" >= now() - interval '2 days' AND
+"time.source" >= now() - interval %s AND
 "sent_at" IS NULL AND
 "feed.name" IS NOT NULL AND
 "classification.taxonomy" IS NOT NULL AND
@@ -346,6 +346,10 @@ class IntelMQCLIContollerTemplate():
         self.parser.add_argument('-n', '--dry-run', action='store_true',
                                  help='Do not store anything or change anything. Just simulate.')
 
+        self.parser.add_argument('--time-interval', nargs=1, default='2 days',
+                                 help='time interval, parseable by postgres.'
+                                      'defaults to "2 days".')
+
         self.init()
 
     def setup(self):
@@ -359,6 +363,7 @@ class IntelMQCLIContollerTemplate():
             self.batch = True
         if self.args.quiet:
             self.quiet = True
+        self.time_interval = self.args.time_interval[0]
 
         if self.args.feed:
             self.additional_where += """ AND "feed.name" = ANY(%s::VARCHAR[]) """
@@ -429,7 +434,7 @@ class IntelMQCLIContollerTemplate():
         """ Passes query to database. """
         if extend:
             query = query + self.additional_where
-            parameters = parameters + self.additional_params
+            parameters = parameters + (self.time_interval, ) + self.additional_params
         self.logger.debug(self.cur.mogrify(query, parameters))
         if not self.dryrun or query.strip().upper().startswith('SELECT'):
             self.cur.execute(query, parameters)
@@ -438,7 +443,7 @@ class IntelMQCLIContollerTemplate():
         """ Passes query to database. """
         if extend:
             query = query + self.additional_where
-            parameters = [param + self.additional_params for param in parameters]
+            parameters = [param + (self.time_interval, ) + self.additional_params for param in parameters]
         if self.config['log_level'].upper() == 'DEBUG':  # on other log levels we can skip the iteration
             for param in parameters:
                 self.logger.debug(self.cur.mogrify(query, param))
