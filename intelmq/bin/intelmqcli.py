@@ -47,6 +47,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
     compress_csv = False
     boilerplate = None
     zipme = False
+    subject = None
 
     def init(self):
         self.parser.add_argument('-l', '--list-feeds', action='store_true',
@@ -56,6 +57,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         self.parser.add_argument('-L', '--list-texts', action='store_true',
                                  help='List all existing texts.')
         self.parser.add_argument('-t', '--text', nargs=1, help='Specify the text to be used.')
+        self.parser.add_argument('-s', '--subject', nargs=1, help='Specify the subject to be used instead of the per-taxonomy.')
         self.parser.add_argument('-T', '--list-taxonomies', action='store_true',
                                  help='List all taxonomies')
         self.parser.add_argument('-y', '--list-types', action='store_true',
@@ -75,6 +77,8 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
             self.boilerplate = self.args.text[0]
         if self.args.zip:
             self.zipme = True
+        if self.args.subject:
+            self.subject = self.args.subject[0]
 
         self.connect_database()
 
@@ -131,15 +135,19 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
             self.logger.info("All taxonomies: " + ", ".join(taxonomies))
             for taxonomy in taxonomies:
                 self.logger.info('Handling taxonomy {!r}.'.format(taxonomy))
-                if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
+                if (taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None) and not self.subject:
                     self.logger.error('No subject defined for %r.' % taxonomy)
                     continue
                 self.execute(lib.QUERY_OPEN_EVENT_REPORTS_BY_TAXONOMY, (taxonomy, ))
                 report_ids = [x['rtir_report_id'] for x in self.cur.fetchall()]
                 self.execute(lib.QUERY_OPEN_EVENT_IDS_BY_TAXONOMY, (taxonomy, ))
                 event_ids = [x['id'] for x in self.cur.fetchall()]
+                if self.subject:
+                    subject_line = self.subject
+                else:
+                    subject_line = lib.SUBJECT[taxonomy]
                 subject = ('%s %s incidents on %s'
-                           '' % (len(event_ids), lib.SUBJECT[taxonomy],
+                           '' % (len(event_ids), subject_line,
                                  datetime.datetime.now().strftime('%Y-%m-%d')))
 
                 if self.dryrun:
@@ -204,7 +212,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
             self.logger.info("All half processed incidents and taxonomy: " + str(query))
             for incident_id, taxonomy in query:
                 self.logger.info('Handling incident {!r} and taxonomy {!r}.'.format(incident_id, taxonomy))
-                if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
+                if (taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None) and not self.args.subject:
                     self.logger.error('No subject defined for %r.' % taxonomy)
                     continue
 
@@ -277,9 +285,13 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         query = self.shrink_dict(query)
         ids = list(str(row['id']) for row in query)
 
+        if self.subject:
+            subject_line = self.subject
+        else:
+            subject_line = lib.SUBJECT[taxonomy]
         subject = ('{tax} in your network: {date}'
                    ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
-                             tax=lib.SUBJECT[taxonomy]))
+                             tax=subject_line))
         text = self.get_text(taxonomy)
         if six.PY2:
             csvfile = io.BytesIO()
