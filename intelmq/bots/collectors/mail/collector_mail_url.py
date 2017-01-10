@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
 
 import requests
 
 from intelmq.lib.bot import CollectorBot
-from intelmq.lib.message import Report
 
 try:
     import imbox
@@ -20,6 +18,9 @@ class MailURLCollectorBot(CollectorBot):
         if imbox is None:
             self.logger.error('Could not import imbox. Please install it.')
             self.stop()
+
+        # Build request
+        self.set_request_parameters()
 
     def process(self):
         mailbox = imbox.Imbox(self.parameters.mail_host,
@@ -40,35 +41,16 @@ class MailURLCollectorBot(CollectorBot):
                     match = re.search(self.parameters.url_regex, str(body))
                     if match:
                         url = match.group()
-                        url = url.strip()     # strip leading and trailing spaces, newlines and carriage returns
-
-                        # Build request
-                        self.http_header = getattr(self.parameters, 'http_header', {})
-                        self.http_verify_cert = getattr(self.parameters,
-                                                        'http_verify_cert', True)
-
-                        if hasattr(self.parameters, 'http_user') and hasattr(
-                                self.parameters, 'http_password'):
-                            self.auth = (self.parameters.http_user,
-                                         self.parameters.http_password)
-                        else:
-                            self.auth = None
-
-                        http_proxy = getattr(self.parameters, 'http_proxy', None)
-                        https_proxy = getattr(self.parameters,
-                                              'http_ssl_proxy', None)
-                        if http_proxy and https_proxy:
-                            self.proxy = {'http': http_proxy, 'https': https_proxy}
-                        else:
-                            self.proxy = None
-
-                        self.http_header['User-agent'] = self.parameters.http_user_agent
+                        # strip leading and trailing spaces, newlines and
+                        # carriage returns
+                        url = url.strip()
 
                         self.logger.info("Downloading report from %r." % url)
                         resp = requests.get(url=url,
                                             auth=self.auth, proxies=self.proxy,
                                             headers=self.http_header,
-                                            verify=self.http_verify_cert)
+                                            verify=self.http_verify_cert,
+                                            cert=self.ssl_client_cert)
 
                         if resp.status_code // 100 != 2:
                             raise ValueError('HTTP response status code was {}.'
@@ -76,7 +58,7 @@ class MailURLCollectorBot(CollectorBot):
 
                         self.logger.info("Report downloaded.")
 
-                        report = Report()
+                        report = self.new_report()
                         report.add("raw", resp.content)
                         self.send_message(report)
 
@@ -88,6 +70,4 @@ class MailURLCollectorBot(CollectorBot):
         mailbox.logout()
 
 
-if __name__ == "__main__":
-    bot = MailURLCollectorBot(sys.argv[1])
-    bot.start()
+BOT = MailURLCollectorBot

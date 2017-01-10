@@ -17,12 +17,10 @@ import fnmatch
 import io
 import socket
 import ssl
-import sys
 import zipfile
 from ftplib import FTP_TLS
 
 from intelmq.lib.bot import CollectorBot
-from intelmq.lib.message import Report
 
 
 # BEGIN content from Stack Overflow
@@ -108,13 +106,11 @@ class FTPSCollectorBot(CollectorBot):
                 raw_reports.append(zfp.read(filename))
 
         for raw_report in raw_reports:
-            report = Report()
+            report = self.new_report()
             report.add("raw", raw_report, sanitize=True)
             report.add("feed.url", 'ftps://' + self.parameters.ftps_host + ':' +
                        str(self.parameters.ftps_port), sanitize=True)
             self.send_message(report)
 
 
-if __name__ == "__main__":
-    bot = FTPSCollectorBot(sys.argv[1])
-    bot.start()
+BOT = FTPSCollectorBot

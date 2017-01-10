@@ -20,7 +20,6 @@ xmpp_to_user: string
 xmpp_to_server: string
 """
 
-import sys
 
 from intelmq.lib.bot import Bot
 
@@ -74,7 +73,8 @@ class XMPPOutputBot(Bot):
         receiver = self.parameters.xmpp_to_user + '@' +\
             self.parameters.xmpp_to_server
 
-        jevent = event.to_json(hierarchical=self.parameters.hierarchical_output)
+        jevent = event.to_json(hierarchical=self.parameters.hierarchical_output,
+                               with_type=True)
 
         try:
             # TODO: proper error handling. Right now it cannot be
@@ -97,6 +97,4 @@ class XMPPOutputBot(Bot):
             self.logger.info("There was no XMPPClient I could stop.")
 
 
-if __name__ == "__main__":
-    bot = XMPPOutputBot(sys.argv[1])
-    bot.start()
+BOT = XMPPOutputBot

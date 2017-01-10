@@ -23,10 +23,8 @@ xmpp_room_password: string
 xmpp_room_nick: string
 """
 
-import sys
 
 from intelmq.lib.bot import CollectorBot
-from intelmq.lib.message import Report
 
 try:
     import sleekxmpp
@@ -132,11 +130,9 @@ class XMPPCollectorBot(CollectorBot):
         # Read msg-body and add as raw to a new report.
         # now it's up to a parser to do the interpretation of the message.
         if raw_msg:
-            report = Report()
+            report = self.new_report()
             report.add("raw", raw_msg)
             self.send_message(report)
 
 
-if __name__ == "__main__":
-    bot = XMPPCollectorBot(sys.argv[1])
-    bot.start()
+BOT = XMPPCollectorBot

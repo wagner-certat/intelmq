@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
-import sys
 
 from intelmq.lib.bot import CollectorBot
-from intelmq.lib.message import Report
 
 try:
     import stomp
@@ -27,7 +25,7 @@ try:
         def on_message(self, headers, message):
             self.n6stomper.logger.debug('Receive message '
                                         '{!r}...'.format(message[:500]))
-            report = Report()
+            report = self.n6stomper.new_report()
             report.add("raw", message.rstrip())
             report.add("feed.url", "stomp://" +
                        self.n6stomper.parameters.server +
@@ -87,6 +85,5 @@ class n6stompCollectorBot(CollectorBot):
     def process(self):
         pass
 
-if __name__ == "__main__":
-    bot = n6stompCollectorBot(sys.argv[1])
-    bot.start()
+
+BOT = n6stompCollectorBot

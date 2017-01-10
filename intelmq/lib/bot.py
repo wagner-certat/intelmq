@@ -19,7 +19,7 @@ from intelmq import (DEFAULT_LOGGING_PATH, DEFAULTS_CONF_FILE,
                      HARMONIZATION_CONF_FILE, PIPELINE_CONF_FILE,
                      RUNTIME_CONF_FILE, SYSTEM_CONF_FILE)
 from intelmq.lib import exceptions, utils
-from intelmq.lib.message import MessageFactory
+import intelmq.lib.message as libmessage
 from intelmq.lib.pipeline import PipelineFactory
 
 __all__ = ['Bot', 'CollectorBot', 'ParserBot']
@@ -324,7 +324,7 @@ class Bot(object):
             if self.__message_counter % 500 == 0:
                 self.logger.info("Processed %s messages." % self.__message_counter)
 
-            raw_message = MessageFactory.serialize(message)
+            raw_message = libmessage.MessageFactory.serialize(message)
             self.__destination_pipeline.send(raw_message)
 
     def receive_message(self):
@@ -335,7 +335,12 @@ class Bot(object):
             if not message:
                 self.logger.warning('Empty message received. Some previous bot sent invalid data.')
                 continue
-        self.__current_message = MessageFactory.unserialize(message)
+
+        # handle a sighup which happened during blocking read
+        self.__handle_sighup()
+
+        self.__current_message = libmessage.MessageFactory.unserialize(message,
+                                                                       harmonization=self.harmonization)
 
         if 'raw' in self.__current_message and len(self.__current_message['raw']) > 400:
             tmp_msg = self.__current_message.to_dict(hierarchical=False)
@@ -343,9 +348,6 @@ class Bot(object):
         else:
             tmp_msg = self.__current_message
         self.logger.debug('Received message {!r}.'.format(tmp_msg))
-
-        # handle a sighup which happened during blocking read
-        self.__handle_sighup()
 
         return self.__current_message
 
@@ -449,15 +451,17 @@ class Bot(object):
 
     def __load_harmonization_configuration(self):
         self.logger.debug("Loading Harmonization configuration from %r." % HARMONIZATION_CONF_FILE)
-        config = utils.load_configuration(HARMONIZATION_CONF_FILE)
+        self.harmonization = utils.load_configuration(HARMONIZATION_CONF_FILE)
 
-        for message_types in config.keys():
-            for key in config[message_types].keys():
-                for _key in config.keys():
-                    if _key.startswith("%s." % key):
-                        raise exceptions.ConfigurationError(
-                            'harmonization',
-                            "Key %s is not valid." % _key)
+    def new_event(self, *args, **kwargs):
+        return libmessage.Event(*args, harmonization=self.harmonization, **kwargs)
+
+    @classmethod
+    def run(cls):
+        if len(sys.argv) < 2:
+            exit('No bot ID given.')
+        instance = cls(sys.argv[1])
+        instance.start()
 
 
 class ParserBot(Bot):
@@ -475,6 +479,14 @@ class ParserBot(Bot):
         """
         raw_report = utils.base64_decode(report.get("raw"))
         for line in csv.reader(io.StringIO(raw_report)):
+            yield line
+
+    def parse_csv_dict(self, report):
+        """
+        A basic CSV Dictionary parser.
+        """
+        raw_report = utils.base64_decode(report.get("raw"))
+        for line in csv.DictReader(io.StringIO(raw_report)):
             yield line
 
     def parse(self, report):
@@ -590,6 +602,42 @@ class CollectorBot(Bot):
         messages = filter(self.__filter_empty_report, messages)
         messages = map(self.__add_report_fields, messages)
         super(CollectorBot, self).send_message(*messages)
+
+    def new_report(self):
+        return libmessage.Report()
+
+    def set_request_parameters(self):
+        if hasattr(self.parameters, 'http_ssl_proxy'):
+            self.logger.warning("Parameter 'http_ssl_proxy' is deprecated and will be removed in "
+                                "version 1.0!")
+            if not hasattr(self.parameters, 'https_proxy'):
+                self.parameters.https_proxy = self.parameters.http_ssl_proxy
+
+        self.http_header = getattr(self.parameters, 'http_header', {})
+        self.http_verify_cert = getattr(self.parameters, 'http_verify_cert',
+                                        True)
+        self.ssl_client_cert = getattr(self.parameters,
+                                       'ssl_client_certificate', None)
+
+        if hasattr(self.parameters, 'http_username') and hasattr(
+                self.parameters, 'http_password'):
+            self.auth = (self.parameters.http_username,
+                         self.parameters.http_password)
+        else:
+            self.auth = None
+
+        if self.parameters.http_proxy and self.parameters.https_proxy:
+            self.proxy = {'http': self.parameters.http_proxy,
+                          'https': self.parameters.https_proxy}
+        elif self.parameters.http_proxy or self.parameters.https_proxy:
+            self.logger.warning('Only {}_proxy seems to be set.'
+                                'Both http and https proxies must be set.'
+                                .format('http' if self.parameters.http_proxy else 'https'))
+            self.proxy = None
+        else:
+            self.proxy = None
+
+        self.http_header['User-agent'] = self.parameters.http_user_agent
 
 
 class Parameters(object):

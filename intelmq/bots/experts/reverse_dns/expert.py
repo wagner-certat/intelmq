@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 from datetime import datetime
 
 import dns
@@ -12,6 +11,7 @@ from intelmq.lib.harmonization import IPAddress
 
 MINIMUM_BGP_PREFIX_IPV4 = 24
 MINIMUM_BGP_PREFIX_IPV6 = 128
+DNS_EXCEPTION_VALUE = "__dns-exception"
 
 
 class ReverseDnsExpertBot(Bot):
@@ -21,6 +21,8 @@ class ReverseDnsExpertBot(Bot):
                            self.parameters.redis_cache_port,
                            self.parameters.redis_cache_db,
                            self.parameters.redis_cache_ttl,
+                           getattr(self.parameters, "redis_cache_password",
+                                   None)
                            )
 
     def process(self):
@@ -48,7 +50,9 @@ class ReverseDnsExpertBot(Bot):
             cachevalue = self.cache.get(cache_key)
 
             result = None
-            if cachevalue:
+            if cachevalue == DNS_EXCEPTION_VALUE:
+                continue
+            elif cachevalue:
                 result = cachevalue
             else:
                 rev_name = reversename.from_address(ip)
@@ -61,8 +65,12 @@ class ReverseDnsExpertBot(Bot):
                         result = None
                         raise ValueError
                 except (dns.exception.DNSException, ValueError) as e:
-                    if isinstance(e, dns.resolver.NXDOMAIN):
-                        continue
+                    # Set default TTL for 'DNS query name does not exist' error
+                    ttl = None if isinstance(e, dns.resolver.NXDOMAIN) else \
+                        getattr(self.parameters, "cache_ttl_invalid_response",
+                                60)
+                    self.cache.set(cache_key, DNS_EXCEPTION_VALUE, ttl)
+
                 else:
                     ttl = datetime.fromtimestamp(expiration) - datetime.now()
                     self.cache.set(cache_key, str(result),
@@ -75,6 +83,4 @@ class ReverseDnsExpertBot(Bot):
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = ReverseDnsExpertBot(sys.argv[1])
-    bot.start()
+BOT = ReverseDnsExpertBot
