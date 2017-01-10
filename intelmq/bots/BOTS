@@ -421,7 +421,7 @@
         },
         "Copy Extra": {
             "description": "Copies a list of values from `extra` to `shareable_extra_info`.",
-            "module": "intelmq.experts.copy_extra.expert",
+            "module": "intelmq.bots.experts.copy_extra.expert",
             "parameters": {
                 "keys": [
                     "deviceid",
