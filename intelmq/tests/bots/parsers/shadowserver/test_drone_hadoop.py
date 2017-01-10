@@ -239,6 +239,31 @@ EVENTS = [{'__type': 'Event',
            'source.ip': '165.228.93.207',
            'source.port': 27105,
            'time.observation': '2015-01-01T00:00:00+00:00',
+           'time.source': '2011-04-23T00:00:37+00:00'},
+          {'__type': 'Event',
+           'feed.name': 'ShadowServer Botnet Drone Hadoop',
+           'classification.taxonomy': 'Malicious Code',
+           'classification.type': 'botnet drone',
+           'classification.identifier': 'botnet',
+           'destination.asn': 8560,
+           'destination.geolocation.cc': 'DE',
+           'destination.ip': '87.106.24.200',
+           'destination.port': 443,
+           'destination.url': 'https://115-166-54-44.ip.adam.com.au/index.php',
+           'protocol.application': 'https',
+           'extra': '{"connection_count": 1, "os.name": "Windows", "os.version": "2000 SP4, XP SP1+"}',
+           'malware.name': 'sinkhole',
+           'protocol.transport': 'tcp',
+           'raw': utils.base64_encode('\n'.join([RECONSTRUCTED_LINES[0],
+                                                 RECONSTRUCTED_LINES[11], ''])),
+           'source.asn': 1221,
+           'source.geolocation.cc': 'AU',
+           'source.geolocation.city': 'SYDNEY',
+           'source.geolocation.region': 'NEW SOUTH WALES',
+           'source.ip': '165.228.93.207',
+           'source.port': 27105,
+           'source.reverse_dns': '115-166-54-44.ip.adam.com.au',
+           'time.observation': '2015-01-01T00:00:00+00:00',
            'time.source': '2011-04-23T00:00:37+00:00'}]
 
 
@@ -260,5 +285,32 @@ class TestShadowserverParserBot(test.BotTestCase, unittest.TestCase):
             self.assertMessageEqual(i, EVENT)
 
 
-if __name__ == '__main__':
+TESTING_OVERWRITE_FEEDNAME = 'My-Botnet-Drone-Hadoop'
+
+
+class TestOverwriteShadowserverParserBot(test.BotTestCase, unittest.TestCase):
+
+    @classmethod
+    def set_bot(cls):
+        cls.bot_reference = ShadowserverParserBot
+        cls.default_input_message = EXAMPLE_REPORT.copy()
+        cls.default_input_message['feed.name'] = TESTING_OVERWRITE_FEEDNAME
+        cls.sysconfig = {'feedname': 'Botnet-Drone-Hadoop',
+                         'overwrite': True}
+
+    def test_bot_name(self):
+        "Do **not** test that our second test has the same name as the bot."
+        pass
+
+    def test_overwrite(self):
+        """ Test if overwrite parameter works. """
+
+        self.run_bot()
+        for i, EVENT in enumerate(EVENTS):
+            event = EVENT.copy()
+            event['feed.name'] = 'Botnet-Drone-Hadoop'
+            self.assertMessageEqual(i, event)
+
+
+if __name__ == '__main__':  # pragma: no cover
     unittest.main()

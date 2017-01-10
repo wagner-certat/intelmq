@@ -11,3 +11,4 @@ setuptools>=0.9
 tabulate==0.7.5
 unicodecsv>=0.14.1
 wheel>=0.21
+

@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-
-
-TODO: check if action is allowed when called
 """
 import argparse
 import glob
@@ -97,14 +94,22 @@ def dump_info(fname):
 
 
 def save_file(fname, content):
-    with open(fname, 'wt') as handle:
-        json.dump(content, handle)
+    try:
+        with open(fname, 'wt') as handle:
+            json.dump(content, handle)
+    except KeyboardInterrupt:
+        with open(fname, 'wt') as handle:
+            json.dump(content, handle)
+        exit(1)
 
 
 def load_meta(dump):
     retval = []
     for key, value in dump.items():
-        error = value['traceback'].splitlines()[-1]
+        if type(value['traceback']) is not list:
+            error = value['traceback'].splitlines()[-1]
+        else:
+            error = value['traceback'][-1].strip()
         if len(error) > 200:
             error = error[:100] + '...' + error[-100:]
         retval.append((key, error))
@@ -123,7 +128,7 @@ def main():
     parser.add_argument('botid', metavar='botid', nargs='?',
                         default=None, help='botid to inspect dumps of')
     args = parser.parse_args()
-    ctl = intelmqctl.IntelMQContoller()
+    ctl = intelmqctl.IntelMQController()
 
     if args.botid is None:
         filenames = glob.glob(os.path.join(DEFAULT_LOGGING_PATH, '*.dump'))
@@ -164,14 +169,16 @@ def main():
     answer = None
     while True:
         info = dump_info(fname)
+        available_answers = ACTIONS.keys()
         print('Processing {}: {}'.format(bold(botid), info))
 
         if info.startswith(str(red)):
             available_opts = [item[0] for item in ACTIONS.values() if item[2]]
+            available_answers = [k for k, v in ACTIONS.items() if v[2]]
             print('Restricted actions.')
         else:
-            # don't display list after 'show' command
-            if not (answer and isinstance(answer, list) and answer[0] == 's'):
+            # don't display list after 'show' and 'recover' command
+            if not (answer and isinstance(answer, list) and answer[0] in ['s', 'r']):
                 with open(fname, 'rt') as handle:
                     content = json.load(handle)
                 meta = load_meta(content)
@@ -193,6 +200,9 @@ def main():
         else:
             if not answer:
                 continue
+        if len(answer) == 0 or answer[0] not in available_answers:
+            print('Action not allowed.')
+            continue
         if any([answer[0] == char for char in AVAILABLE_IDS]) and len(answer) > 1:
             ids = [int(item) for item in answer[1].split(',')]
         else:
@@ -221,31 +231,33 @@ def main():
             runtime = utils.load_configuration(RUNTIME_CONF_FILE)
             params = utils.load_parameters(default, runtime)
             pipe = pipeline.PipelineFactory.create(params)
-            for i, (key, entry) in enumerate([item for (count, item)
-                                              in enumerate(content.items()) if count in ids]):
-                if entry['message']:
-                    msg = entry['message']
-                else:
-                    print('No message here, deleting entry.')
-                    del content[key]
-                    continue
-
-                if queue_name is None:
-                    if len(answer) == 3:
-                        queue_name = answer[2]
+            try:
+                for i, (key, entry) in enumerate([item for (count, item)
+                                                  in enumerate(content.items()) if count in ids]):
+                    if entry['message']:
+                        msg = entry['message']
                     else:
-                        queue_name = entry['source_queue']
-                try:
-                    pipe.set_queues(queue_name, 'destination')
-                    pipe.connect()
-                    pipe.send(msg)
-                except exceptions.PipelineError:
-                    print(red('Could not reinject into queue {}: {}'
-                              ''.format(queue_name, traceback.format_exc())))
-                else:
-                    del content[key]
-                    print(green('Recovered dump {}.'.format(i)))
-            save_file(fname, content)
+                        print('No message here, deleting entry.')
+                        del content[key]
+                        continue
+
+                    if queue_name is None:
+                        if len(answer) == 3:
+                            queue_name = answer[2]
+                        else:
+                            queue_name = entry['source_queue']
+                    try:
+                        pipe.set_queues(queue_name, 'destination')
+                        pipe.connect()
+                        pipe.send(msg)
+                    except exceptions.PipelineError:
+                        print(red('Could not reinject into queue {}: {}'
+                                  ''.format(queue_name, traceback.format_exc())))
+                    else:
+                        del content[key]
+                        print(green('Recovered dump {}.'.format(i)))
+            finally:
+                save_file(fname, content)
             if not content:
                 os.remove(fname)
                 print('Deleted empty file {}'.format(fname))
@@ -268,8 +280,9 @@ def main():
                             len(value['message']['raw']) > 1000):
                         value['message']['raw'] = value['message'][
                             'raw'][:1000] + '...[truncated]'
-                value['traceback'] = value['traceback'].splitlines()
+                if type(value['traceback']) is not list:
+                    value['traceback'] = value['traceback'].splitlines()
                 pprint.pprint(value)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
