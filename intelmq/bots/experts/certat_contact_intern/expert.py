@@ -85,6 +85,4 @@ class CERTatContactExpertBot(Bot):
             self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = CERTatContactExpertBot(sys.argv[1])
-    bot.start()
+BOT = CERTatContactExpertBot

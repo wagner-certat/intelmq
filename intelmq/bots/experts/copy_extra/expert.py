@@ -23,6 +23,4 @@ class CopyExtraExpertBot(Bot):
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = CopyExtraExpertBot(sys.argv[1])
-    bot.start()
+BOT = CopyExtraExpertBot

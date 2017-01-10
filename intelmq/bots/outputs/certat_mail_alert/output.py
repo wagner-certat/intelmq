@@ -34,6 +34,4 @@ the VIP alerting service
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = CertatMailAlertOutputBot(sys.argv[1])
-    bot.start()
+BOT = CertatMailAlertOutputBot

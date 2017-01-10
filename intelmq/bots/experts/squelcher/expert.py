@@ -124,6 +124,4 @@ class SquelcherExpertBot(Bot):
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = SquelcherExpertBot(sys.argv[1])
-    bot.start()
+BOT = SquelcherExpertBot
