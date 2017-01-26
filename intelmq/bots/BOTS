@@ -419,6 +419,21 @@
                 "overwrite_cc": false
             }
         },
+        "CERT.at Contact Database intern": {
+            "description": "Fetches abuse contacts from a database per ASN.",
+            "module": "intelmq.bots.experts.certat_contact_intern.expert",
+            "parameters": {
+                "ascolumn": "asn",
+                "column": "contact",
+                "database": "intelmq",
+                "host": "localhost",
+                "password": "<password>",
+                "port": "5432",
+                "sslmode": "require",
+                "table": "contacts",
+                "user": "intelmq"
+            }
+        },
         "Copy Extra": {
             "description": "Copies a list of values from `extra` to `shareable_extra_info`.",
             "module": "intelmq.bots.experts.copy_extra.expert",
@@ -546,6 +561,20 @@
             "module": "intelmq.bots.experts.tor_nodes.expert",
             "parameters": {
                 "database": "/opt/intelmq/var/lib/bots/tor_nodes/tor_nodes.dat"
+            }
+        },
+        "Squelcher": {
+            "description": "Squelcher is the bot responsible to find matching events in the event database and add a flag if the affected or responsible contact should be notified based on the TTL from the configuration for AS, IP network and IP address.",
+            "module": "intelmq.bots.experts.squelcher.expert",
+            "parameters": {
+                "configuration_path": "/opt/intelmq/etc/squelcher.conf",
+                "database": "intelmq-events",
+                "host": "localhost",
+                "password": "<password>",
+                "port": 5432,
+                "sslmode": "require",
+                "table": "events",
+                "user": "intelmq"
             }
         },
         "url2fqdn": {
