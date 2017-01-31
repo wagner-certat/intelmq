@@ -45,6 +45,8 @@ class SquelcherExpertBot(Bot):
                                         connect_timeout=connect_timeout,
                                         )
             self.cur = self.con.cursor()
+            self.con.autocommit = getattr(self.parameters, 'autocommit', True)
+
             global SELECT_QUERY
             SELECT_QUERY = SELECT_QUERY.format(table=self.parameters.table)
         except:

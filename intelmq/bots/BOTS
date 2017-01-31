@@ -423,6 +423,7 @@
             "description": "Fetches abuse contacts from a database per ASN.",
             "module": "intelmq.bots.experts.certat_contact_intern.expert",
             "parameters": {
+                "autocommit": true,
                 "ascolumn": "asn",
                 "column": "contact",
                 "database": "intelmq",
@@ -567,6 +568,7 @@
             "description": "Squelcher is the bot responsible to find matching events in the event database and add a flag if the affected or responsible contact should be notified based on the TTL from the configuration for AS, IP network and IP address.",
             "module": "intelmq.bots.experts.squelcher.expert",
             "parameters": {
+                "autocommit": true,
                 "configuration_path": "/opt/intelmq/etc/squelcher.conf",
                 "database": "intelmq-events",
                 "host": "localhost",
