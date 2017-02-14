@@ -3,7 +3,6 @@
 Modify Expert bot let's you manipulate all fields with a config file.
 """
 import json
-import sys
 
 from intelmq.lib.bot import Bot
 

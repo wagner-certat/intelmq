@@ -2,8 +2,6 @@
 """
 CERT.at geolocate the national CERT abuse service
 """
-import sys
-
 from intelmq.lib.bot import Bot
 
 try:

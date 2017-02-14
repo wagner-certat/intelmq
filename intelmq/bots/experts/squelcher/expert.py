@@ -5,7 +5,6 @@ Squelcher Expert marks events as new or old depending on a TTL(ASN, Net, IP).
 from __future__ import unicode_literals
 from ipaddress import ip_address, ip_network
 import psycopg2
-import sys
 
 import netaddr
 
