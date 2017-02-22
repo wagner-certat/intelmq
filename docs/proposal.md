@@ -25,8 +25,9 @@ All bots with the flag `autostart` set to true, will be started now (no changes 
 The bot with ID bot-id will be started now, independent of the run mode (no changes here).
 
 TODO: What happens if the run_mode of a bot changed?
+
 ## stop
-Stopp all running bots, independent of the run mode(s) (no changes here).
+Stop all running bots via SIGTERM, independent of the run mode(s) (no changes here).
 
 ## restart
 Stop and start (no changes here).
@@ -48,6 +49,8 @@ Set the autostart flag to True/False.
 
 Enable the bot on boot with the process manager. (intelmq: write at most one entry of `@reboot intelmqctl start` to crontab, systemd: `systemctl enable bot-name@bot-id`)
 
+Only applies to bots with run mode = stream.
+
 ## schedule / unschedule
 
 ```bash
@@ -56,7 +59,7 @@ Enable the bot on boot with the process manager. (intelmq: write at most one ent
 Update the crontab file for all bots with run_mode = scheduled with time from runtime.
 
 ```bash
-> intelmqctl schedule bot-id
+> intelmqctl schedule bot-id [timespec]
 ```
 Update the crontab entry of the given bot (with the given timespec), and/or uncomment if existing.
 Ensure that run_mode for the bot is scheduled and a valid time is given.
@@ -76,17 +79,11 @@ It additionally checks for consistency of
 * currently running bots and configured bots
 * bots configured in crontab and runtime configuration
 
-# Reasoning
-
-Autostart can be true for scheduled bots. This implies that they will be additionally be started on boot and on `intelmqctl start`.
-
-Can be discussed if this is unwanted or considered harmful.
-
-# crontab
+# Explanation: crontab
 
 The crontab entry which will be written looks like this:
 
-```crontab
+```perl
 <timespec>  intelmqctl start bot-id # IntelMQ bot bot-id
 ```
 
@@ -95,7 +92,7 @@ The comment is the identifier. Used for parsing the file.
 ## autostart on boot
 
 If the PID process management is used, this additional crontab entry exists:
-```cron
+```perl
 @reboot intelmqctl start
 ```
 
