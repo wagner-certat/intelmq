@@ -102,7 +102,7 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
                              "port": 5432,
                              "database": "intelmq",
                              "user": "intelmq",
-                             "password": None,
+                             "password": "intelmq",
                              "sslmode": "require",
                              "table": "tests",
                              }

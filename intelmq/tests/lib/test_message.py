@@ -38,7 +38,7 @@ FEED_FIELDS = {'feed.accuracy': 80,
                'feed.name': 'Feed',
                'feed.provider': 'Feed Provider',
                'feed.url': 'https://www.example.com',
-               'rtir_id': 1337,
+               'rtir_report_id': 1337,
                }
 
 
