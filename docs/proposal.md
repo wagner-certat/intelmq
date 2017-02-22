@@ -7,8 +7,8 @@ There are two (new) concepts:
 # Configuration
 
 * `enabled` is replaced by `autostart`, which is a better name.
-* new parameter `scheduled_time` with a time specification in crontab syntax. Default for oneshots is "0 0 * * *" i.e. midnight
-* `run_mode` can be "stream" or "oneshot" (or other names, TBD). Default is "stream"
+* new parameter `scheduled_time` with a time specification in crontab syntax. Default for scheduled is "0 0 * * *" i.e. midnight
+* `run_mode` can be "continous" or "scheduled". Default is "continous"
 
 # Commands
 
@@ -17,22 +17,20 @@ There are two (new) concepts:
 ```bash
 > intelmqctl start
 ```
-All bots with the flag `autostart` set to true, will be started now (no changes here). Independent of the run mode.
+All bots with the flag `autostart` set to true, will be started now. 
 
 ```bash
 > intelmqctl start [bot-id]
 ```
-The bot with ID bot-id will be started now, independent of the run mode (no changes here).
+The bot with ID bot-id will be started now.
 
 TODO: What happens if the run_mode of a bot changed?
 
 ## stop
-Stop all running bots via SIGTERM, independent of the run mode(s) (no changes here).
+Stop all currently running bots via SIGTERM, independent of the run mode(s).
 
 ## restart
-Stop and start (no changes here).
-
-TODO: also the scheduled ones?
+Stop and start all currently running bots (i.e. do not extra start the "scheduled" ones
 
 ## reload
 No changes here: Send SIGHUP to all running bots.
@@ -49,7 +47,7 @@ Set the autostart flag to True/False.
 
 Enable the bot on boot with the process manager. (intelmq: write at most one entry of `@reboot intelmqctl start` to crontab, systemd: `systemctl enable bot-name@bot-id`)
 
-Only applies to bots with run mode = stream.
+Only applies to bots with run mode = continous.
 
 ## schedule / unschedule
 
@@ -88,12 +86,3 @@ The crontab entry which will be written looks like this:
 ```
 
 The comment is the identifier. Used for parsing the file.
-
-## autostart on boot
-
-If the PID process management is used, this additional crontab entry exists:
-```perl
-@reboot intelmqctl start
-```
-
-This will "simulate" the same behavior as enabled services.
