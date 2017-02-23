@@ -238,7 +238,7 @@ def log(name: str, log_path: str=intelmq.DEFAULT_LOGGING_PATH, log_level: str="D
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
-    if stream:
+    if stream or stream is None:
         console_formatter = logging.Formatter(log_format_stream)
         console_handler = logging.StreamHandler(stream)
         console_handler.setFormatter(console_formatter)
