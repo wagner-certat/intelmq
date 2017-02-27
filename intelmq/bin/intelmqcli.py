@@ -321,6 +321,7 @@ Subject: {subj}
         # SHOW DATA
         if self.table_mode and six.PY2:
             self.logger.error('Sorry, no table mode for ancient python versions!')
+            self.table_mode = False
         elif self.table_mode and not six.PY2:
             if self.quiet:
                 height = 80     # assume anything for quiet mode

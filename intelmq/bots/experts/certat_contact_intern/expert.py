@@ -2,8 +2,6 @@
 """
 CERT.at geolocate the national CERT abuse service
 """
-import sys
-
 from intelmq.lib.bot import Bot
 
 try:
@@ -35,6 +33,7 @@ class CERTatContactExpertBot(Bot):
                                         connect_timeout=connect_timeout,
                                         )
             self.cur = self.con.cursor()
+            self.con.autocommit = getattr(self.parameters, 'autocommit', True)
 
         except:
             self.logger.exception('Failed to connect to database')
@@ -85,6 +84,4 @@ class CERTatContactExpertBot(Bot):
             self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = CERTatContactExpertBot(sys.argv[1])
-    bot.start()
+BOT = CERTatContactExpertBot

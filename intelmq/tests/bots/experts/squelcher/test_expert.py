@@ -82,6 +82,7 @@ INPUT_RANGE = {"__type": "Event",
                }
 
 
+@test.skip_database()
 class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     """
     A TestCase for SquelcherExpertBot.

@@ -5,7 +5,6 @@ Squelcher Expert marks events as new or old depending on a TTL(ASN, Net, IP).
 from __future__ import unicode_literals
 from ipaddress import ip_address, ip_network
 import psycopg2
-import sys
 
 import netaddr
 
@@ -16,7 +15,7 @@ from intelmq.lib.utils import load_configuration
 SELECT_QUERY = '''
 SELECT COUNT(*) FROM {table}
 WHERE
-"time.source" + INTERVAL '%s SECONDS' >= LOCALTIMESTAMP AND
+"time.source" >= LOCALTIMESTAMP - INTERVAL '%s SECONDS' AND
 "classification.type" = %s AND
 "classification.identifier" = %s AND
 "source.ip" = %s AND
@@ -52,6 +51,8 @@ class SquelcherExpertBot(Bot):
                                         connect_timeout=connect_timeout,
                                         )
             self.cur = self.con.cursor()
+            self.con.autocommit = getattr(self.parameters, 'autocommit', True)
+
             global SELECT_QUERY
             SELECT_QUERY = SELECT_QUERY.format(table=self.parameters.table)
         except:
@@ -126,6 +127,4 @@ class SquelcherExpertBot(Bot):
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = SquelcherExpertBot(sys.argv[1])
-    bot.start()
+BOT = SquelcherExpertBot

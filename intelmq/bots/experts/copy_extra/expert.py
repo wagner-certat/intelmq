@@ -3,7 +3,6 @@
 Modify Expert bot let's you manipulate all fields with a config file.
 """
 import json
-import sys
 
 from intelmq.lib.bot import Bot
 
@@ -23,6 +22,4 @@ class CopyExtraExpertBot(Bot):
         self.acknowledge_message()
 
 
-if __name__ == "__main__":
-    bot = CopyExtraExpertBot(sys.argv[1])
-    bot.start()
+BOT = CopyExtraExpertBot
