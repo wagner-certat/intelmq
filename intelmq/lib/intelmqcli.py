@@ -270,7 +270,7 @@ SELECT
     "malware.hash.sha1",
     "malware.name",
     "malware.version",
-    "misp_uuid",
+    "misp.event_uuid",
     "notify",
     "protocol.application",
     "protocol.transport",
