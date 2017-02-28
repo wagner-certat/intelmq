@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Implemented workarounds for old packages:
-    BytesIO instead of StringIO on Python 2 for csv module
 """
-from __future__ import print_function, unicode_literals
-
 import csv
 import datetime
 import io
@@ -16,24 +12,13 @@ import subprocess
 import tempfile
 import zipfile
 
-import psycopg2
-import psycopg2.extensions
-import psycopg2.extras
-import six
 import tabulate
 from termstyle import bold, inverted, reset
 
 import intelmq.lib.intelmqcli as lib
-from intelmq.lib import utils
-
-# Use unicode for all input and output, needed for Py2
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 
 myinverted = str(reset) + str(inverted)
-if six.PY2:
-    input = raw_input
 
 
 class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
@@ -282,10 +267,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                    ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
                              tax=lib.SUBJECT[taxonomy]))
         text = self.get_text(taxonomy)
-        if six.PY2:
-            csvfile = io.BytesIO()
-        else:
-            csvfile = io.StringIO()
+        csvfile = io.StringIO()
         if lib.CSV_FIELDS:
             fieldnames = lib.CSV_FIELDS
         else:
@@ -295,16 +277,9 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                                 extrasaction='ignore', lineterminator='\n')
         writer.writeheader()
         query_unicode = query
-        if six.PY2:
-            query = [{key: utils.encode(val) if isinstance(val, six.text_type) else val for key, val in row.items()}
-                     for row in query]
         writer.writerows(query)
         # note this might contain UTF-8 chars! let's ignore utf-8 errors. sorry.
-        if six.PY2:
-            data = unicode(csvfile.getvalue(), 'utf-8')
-        else:
-            data = csvfile.getvalue()
-        attachment_text = data.encode('ascii', 'ignore')
+        attachment_text = csvfile.getvalue()
         attachment_lines = attachment_text.splitlines()
 
         if self.verbose:
@@ -319,10 +294,7 @@ Subject: {subj}
         showed_text_len = showed_text.count('\n')
 
         # SHOW DATA
-        if self.table_mode and six.PY2:
-            self.logger.error('Sorry, no table mode for ancient python versions!')
-            self.table_mode = False
-        elif self.table_mode and not six.PY2:
+        if self.table_mode:
             if self.quiet:
                 height = 80     # assume anything for quiet mode
             else:
@@ -424,9 +396,7 @@ Subject: {subj}
             ziphandle = zipfile.ZipFile(attachment, mode='w',
                                         compression=zipfile.ZIP_DEFLATED)
             data = csvfile.getvalue()
-            if six.PY2:
-                data = unicode(data, 'utf-8')
-            ziphandle.writestr('events.csv', data.encode('utf-8'))
+            ziphandle.writestr('events.csv', data)
             ziphandle.close()
             attachment.seek(0)
             filename += '.zip'

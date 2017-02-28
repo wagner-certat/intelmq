@@ -20,14 +20,7 @@ import json
 import time
 import zipfile
 
-import psycopg2
-import psycopg2.extras
-
 import intelmq.lib.intelmqcli as lib
-
-# Use unicode for all input and output, needed for Py2
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 
 class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):

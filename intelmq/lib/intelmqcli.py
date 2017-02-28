@@ -18,10 +18,8 @@ import sys
 import intelmq.lib.utils as utils
 
 import psycopg2
+import psycopg2.extras
 
-# Use unicode for all input and output, needed for Py2
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 __all__ = ['BASE_WHERE', 'CSV_FIELDS', 'EPILOG',
            'QUERY_DISTINCT_CONTACTS_BY_INCIDENT', 'QUERY_EVENTS_BY_ASCONTACT_INCIDENT',
