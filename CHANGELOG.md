@@ -56,6 +56,7 @@ v1.0 (in development, master branch)
 - `webshot_url` removed
 - `additional_information` renamed to `extra`, must be JSON
 - `os.name`, `os.version`, `user_agent` removed in favor of `extra`
+-`classification.taxonomy` is now lower case only
 
 -----
 
