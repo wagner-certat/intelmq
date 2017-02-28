@@ -140,7 +140,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                     self.logger.info('Created Incident %s.' % incident_id)
                     # XXX TODO: distinguish between national and other constituencies
                     self.rt.edit_ticket(incident_id, CF__RTIR_Classification=taxonomy,
-                                        CF__RTIR_Constituency='national',
+                                        CF__RTIR_Constituency='NATIONAL',
                                         CF__RTIR_Function='IncidentCoord')
 
                 for report_id in report_ids:
