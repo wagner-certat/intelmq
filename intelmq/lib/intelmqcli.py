@@ -78,17 +78,17 @@ USAGE = '''
     intelmqcli --text='boilerplate name'
     intelmqcli --feed='feedname' '''
 
-SUBJECT = {"Abusive Content": "Abusive content (spam, ...)",
-           "Malicious Code": "Malicious code (malware, botnet, ...)",
-           "Information Gathering": "Information Gathering (scanning, ...)",
-           "Intrusion Attempts": "Intrusion Attempt",
-           "Intrusions": "Network intrusion",
-           "Availability": "Availability (DDOS, ...)",
-           "Information Content Security": "Information Content Security (dropzone,...)",
-           "Fraud": "Fraud",
-           "Vulnerable": "Vulnerable device",
-           "Other": "Other",
-           "Test": "Test"
+SUBJECT = {"abusive content": "Abusive content (spam, ...)",
+           "malicious code": "Malicious code (malware, botnet, ...)",
+           "information gathering": "Information Gathering (scanning, ...)",
+           "intrusion attempts": "Intrusion Attempt",
+           "intrusions": "Network intrusion",
+           "availability": "Availability (DDOS, ...)",
+           "information content security": "Information Content Security (dropzone,...)",
+           "fraud": "Fraud",
+           "vulnerable": "Vulnerable device",
+           "other": "Other",
+           "test": "Test"
            }
 
 QUERY_FEED_NAMES = "SELECT DISTINCT \"feed.name\" from events"
