@@ -60,6 +60,13 @@ class SquelcherExpertBot(Bot):
             self.acknowledge_message()
             return
 
+        # XXX FIXME: quick hack by aka 2017/3/3: ignore things which have extra._origin: "dnsmalware"
+        if 'extra' in event and '_origin' in event['extra']:
+            if 'dnsmalware' == event['extra']['_origin']:
+                event.add('notify', False, force=True)
+                self.modify_end(event)
+                return
+
         if 'source.ip' not in event and 'source.fqdn' in event:
             event.add('notify', True, force=True)
             self.modify_end(event)
