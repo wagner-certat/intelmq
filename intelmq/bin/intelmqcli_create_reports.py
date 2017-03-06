@@ -12,8 +12,6 @@ foreach distinct feed.names in evlist
 
 TODO: Non-batch mode
 """
-from __future__ import print_function, unicode_literals
-
 import datetime
 import io
 import json
