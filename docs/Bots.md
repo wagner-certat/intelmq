@@ -456,7 +456,7 @@ if `extra._origin` equals `"dnsmalware"`, the flag is always set to false.
 
 The file must by valid JSON and must contain a list with lists containing two
 dictionaries. The first is compared to the event and thus has the same layout.
-The second has only one field `"ttl"` with the TTL as value.
+The second dictionary has only one field `"ttl"` with the TTL as value.
 
 ```json
 [
@@ -473,9 +473,12 @@ The second has only one field `"ttl"` with the TTL as value.
 ]
 ```
 
-The first dict must be a sub-set of the event. Additionally, the IP networks
-are compared separately, also the additional `source.iprange` field (holding a
-list of two items, start and end)
+The first dictionary must be a sub-set of the event -> All given fields
+must exist in the event with the given values.
+The `source.network` field is checked separately with the IP in the event (if
+the `source.ip` is in the given network block). The same applies to the
+additional `source.iprange` field (holding a list of two items, the start and
+end IP address).
 
 More examples can be found in `intelmq/etc/squelcher.conf`.
 
