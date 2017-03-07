@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Implemented workarounds for old packages:
-    BytesIO instead of StringIO on Python 2 for csv module
 """
-from __future__ import print_function, unicode_literals
-
 import csv
 import datetime
 import io
@@ -16,24 +12,13 @@ import subprocess
 import tempfile
 import zipfile
 
-import psycopg2
-import psycopg2.extensions
-import psycopg2.extras
-import six
 import tabulate
 from termstyle import bold, inverted, reset
 
 import intelmq.lib.intelmqcli as lib
-from intelmq.lib import utils
-
-# Use unicode for all input and output, needed for Py2
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 
 myinverted = str(reset) + str(inverted)
-if six.PY2:
-    input = raw_input
 
 
 class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
@@ -47,6 +32,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
     compress_csv = False
     boilerplate = None
     zipme = False
+    subject = None
 
     def init(self):
         self.parser.add_argument('-l', '--list-feeds', action='store_true',
@@ -56,6 +42,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         self.parser.add_argument('-L', '--list-texts', action='store_true',
                                  help='List all existing texts.')
         self.parser.add_argument('-t', '--text', nargs=1, help='Specify the text to be used.')
+        self.parser.add_argument('-s', '--subject', nargs=1, help='Specify the subject to be used instead of the per-taxonomy.')
         self.parser.add_argument('-T', '--list-taxonomies', action='store_true',
                                  help='List all taxonomies')
         self.parser.add_argument('-y', '--list-types', action='store_true',
@@ -72,9 +59,11 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         if self.args.compress_csv:
             self.compress_csv = True
         if self.args.text:
-            self.boilerplate = self.args.text
+            self.boilerplate = self.args.text[0]
         if self.args.zip:
             self.zipme = True
+        if self.args.subject:
+            self.subject = self.args.subject[0]
 
         self.connect_database()
 
@@ -131,15 +120,19 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
             self.logger.info("All taxonomies: " + ", ".join(taxonomies))
             for taxonomy in taxonomies:
                 self.logger.info('Handling taxonomy {!r}.'.format(taxonomy))
-                if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
+                if (taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None) and not self.subject:
                     self.logger.error('No subject defined for %r.' % taxonomy)
                     continue
                 self.execute(lib.QUERY_OPEN_EVENT_REPORTS_BY_TAXONOMY, (taxonomy, ))
                 report_ids = [x['rtir_report_id'] for x in self.cur.fetchall()]
                 self.execute(lib.QUERY_OPEN_EVENT_IDS_BY_TAXONOMY, (taxonomy, ))
                 event_ids = [x['id'] for x in self.cur.fetchall()]
+                if self.subject:
+                    subject_line = self.subject
+                else:
+                    subject_line = lib.SUBJECT[taxonomy]
                 subject = ('%s %s incidents on %s'
-                           '' % (len(event_ids), lib.SUBJECT[taxonomy],
+                           '' % (len(event_ids), subject_line,
                                  datetime.datetime.now().strftime('%Y-%m-%d')))
 
                 if self.dryrun:
@@ -155,7 +148,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                     self.logger.info('Created Incident %s.' % incident_id)
                     # XXX TODO: distinguish between national and other constituencies
                     self.rt.edit_ticket(incident_id, CF__RTIR_Classification=taxonomy,
-                                        CF__RTIR_Constituency='national',
+                                        CF__RTIR_Constituency='NATIONAL',
                                         CF__RTIR_Function='IncidentCoord')
 
                 for report_id in report_ids:
@@ -204,7 +197,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
             self.logger.info("All half processed incidents and taxonomy: " + str(query))
             for incident_id, taxonomy in query:
                 self.logger.info('Handling incident {!r} and taxonomy {!r}.'.format(incident_id, taxonomy))
-                if taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None:
+                if (taxonomy not in lib.SUBJECT or lib.SUBJECT[taxonomy] is None) and not self.args.subject:
                     self.logger.error('No subject defined for %r.' % taxonomy)
                     continue
 
@@ -242,10 +235,9 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         text = None
         if self.boilerplate:  # get id from parameter
             text_id = self.boilerplate
-        else:  # get id from type (if only one type present)
-            self.query_get_text(text_id)
-            if self.cur.rowcount:
-                text = self.cur.fetchall()[0]['body']
+        self.query_get_text(text_id)
+        if self.cur.rowcount:
+            text = self.cur.fetchall()[0]['body']
         if not text:  # if all failed, get the default
             self.query_get_text(self.config['database']['default_key'])
             if self.cur.rowcount:
@@ -278,14 +270,15 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         query = self.shrink_dict(query)
         ids = list(str(row['id']) for row in query)
 
+        if self.subject:
+            subject_line = self.subject
+        else:
+            subject_line = lib.SUBJECT[taxonomy]
         subject = ('{tax} in your network: {date}'
                    ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
-                             tax=lib.SUBJECT[taxonomy]))
+                             tax=subject_line))
         text = self.get_text(taxonomy)
-        if six.PY2:
-            csvfile = io.BytesIO()
-        else:
-            csvfile = io.StringIO()
+        csvfile = io.StringIO()
         if lib.CSV_FIELDS:
             fieldnames = lib.CSV_FIELDS
         else:
@@ -295,16 +288,9 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                                 extrasaction='ignore', lineterminator='\n')
         writer.writeheader()
         query_unicode = query
-        if six.PY2:
-            query = [{key: utils.encode(val) if isinstance(val, six.text_type) else val for key, val in row.items()}
-                     for row in query]
         writer.writerows(query)
         # note this might contain UTF-8 chars! let's ignore utf-8 errors. sorry.
-        if six.PY2:
-            data = unicode(csvfile.getvalue(), 'utf-8')
-        else:
-            data = csvfile.getvalue()
-        attachment_text = data.encode('ascii', 'ignore')
+        attachment_text = csvfile.getvalue()
         attachment_lines = attachment_text.splitlines()
 
         if self.verbose:
@@ -319,10 +305,7 @@ Subject: {subj}
         showed_text_len = showed_text.count('\n')
 
         # SHOW DATA
-        if self.table_mode and six.PY2:
-            self.logger.error('Sorry, no table mode for ancient python versions!')
-            self.table_mode = False
-        elif self.table_mode and not six.PY2:
+        if self.table_mode:
             if self.quiet:
                 height = 80     # assume anything for quiet mode
             else:
@@ -424,9 +407,7 @@ Subject: {subj}
             ziphandle = zipfile.ZipFile(attachment, mode='w',
                                         compression=zipfile.ZIP_DEFLATED)
             data = csvfile.getvalue()
-            if six.PY2:
-                data = unicode(data, 'utf-8')
-            ziphandle.writestr('events.csv', data.encode('utf-8'))
+            ziphandle.writestr('events.csv', data)
             ziphandle.close()
             attachment.seek(0)
             filename += '.zip'

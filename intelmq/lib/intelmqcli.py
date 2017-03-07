@@ -18,10 +18,8 @@ import sys
 import intelmq.lib.utils as utils
 
 import psycopg2
+import psycopg2.extras
 
-# Use unicode for all input and output, needed for Py2
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 __all__ = ['BASE_WHERE', 'CSV_FIELDS', 'EPILOG',
            'QUERY_DISTINCT_CONTACTS_BY_INCIDENT', 'QUERY_EVENTS_BY_ASCONTACT_INCIDENT',
@@ -78,17 +76,17 @@ USAGE = '''
     intelmqcli --text='boilerplate name'
     intelmqcli --feed='feedname' '''
 
-SUBJECT = {"Abusive Content": "Abusive content (spam, ...)",
-           "Malicious Code": "Malicious code (malware, botnet, ...)",
-           "Information Gathering": "Information Gathering (scanning, ...)",
-           "Intrusion Attempts": "Intrusion Attempt",
-           "Intrusions": "Network intrusion",
-           "Availability": "Availability (DDOS, ...)",
-           "Information Content Security": "Information Content Security (dropzone,...)",
-           "Fraud": "Fraud",
-           "Vulnerable": "Vulnerable device",
-           "Other": "Other",
-           "Test": "Test"
+SUBJECT = {"abusive content": "Abusive content (spam, ...)",
+           "malicious code": "Malicious code (malware, botnet, ...)",
+           "information gathering": "Information Gathering (scanning, ...)",
+           "intrusion attempts": "Intrusion Attempt",
+           "intrusions": "Network intrusion",
+           "availability": "Availability (DDOS, ...)",
+           "information content security": "Information Content Security (dropzone,...)",
+           "fraud": "Fraud",
+           "vulnerable": "Vulnerable device",
+           "other": "Other",
+           "test": "Test"
            }
 
 QUERY_FEED_NAMES = "SELECT DISTINCT \"feed.name\" from events"
@@ -270,7 +268,7 @@ SELECT
     "malware.hash.sha1",
     "malware.name",
     "malware.version",
-    "misp_uuid",
+    "misp.event_uuid",
     "notify",
     "protocol.application",
     "protocol.transport",
