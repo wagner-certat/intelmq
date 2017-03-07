@@ -108,6 +108,7 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
                              "database": "intelmq",
                              "user": "intelmq",
                              "password": "intelmq",
+                             "sending_time_interval": "2 years",
                              "sslmode": "require",
                              "table": "tests",
                              }
@@ -259,16 +260,18 @@ INSERT INTO {table}(
         self.truncate()
         self.assertLogMatches('Found TTL 72643 for', levelname='DEBUG')
 
-    def test_older_than_2days(self):
-        """event exists, but is older than 2 days and has not been sent -> notify """
-        self.insert('openresolver', 'vulnerable service', True, 0, '198.51.100.5', '- 259200')
+    def test_unsent_notify(self):
+        """event exists, but is older than 1 day and has not been sent -> notify """
+        self.insert('openresolver', 'vulnerable service', True, 0, '198.51.100.5', str(-25*3600))
+        self.sysconfig['sending_time_interval'] = '1 day'
         self.input_message = INPUT5
         self.run_bot()
+        self.sysconfig['sending_time_interval'] = '2 days'
         self.truncate()
         self.assertLogMatches('Found TTL 115200 for', levelname='DEBUG')
         self.assertMessageEqual(0, INPUT5)
 
-    def test_younger_than_2days(self):
+    def test_unsent_squelch(self):
         """event exists, is younger than 2 days and has not been sent -> squelch """
         self.insert('openresolver', 'vulnerable service', True, 0, '198.51.100.5', '- 86400')
         self.input_message = INPUT5

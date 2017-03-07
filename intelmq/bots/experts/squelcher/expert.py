@@ -21,8 +21,8 @@ WHERE
 "classification.identifier" = %s AND
 "source.ip" = %s AND
 notify IS TRUE AND
-("time.source" + INTERVAL '2 DAYS' >= LOCALTIMESTAMP OR
- (sent_at IS NOT NULL AND "time.source" + INTERVAL '2 DAYS' < LOCALTIMESTAMP)
+("time.source" >= LOCALTIMESTAMP - INTERVAL %s OR
+ (sent_at IS NOT NULL AND "time.source" < LOCALTIMESTAMP - INTERVAL %s)
 )
 '''
 """
@@ -104,7 +104,8 @@ class SquelcherExpertBot(Bot):
             if ttl >= 0:
                 self.cur.execute(SELECT_QUERY, (ttl, event['classification.type'],
                                                 event['classification.identifier'],
-                                                event['source.ip']))
+                                                event['source.ip']) +
+                                                (self.parameters.sending_time_interval, ) * 2)
                 result = self.cur.fetchone()[0]
             else:  # never notify with ttl -1
                 result = 1
