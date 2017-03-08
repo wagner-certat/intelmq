@@ -8,14 +8,16 @@
 # 02  01 *   *   *     ( cd /tmp; /my/path/to/this/script )
 #
 
-cd /tmp
-mkdir qualle
-cd qualle
+BGPROUTER=qualle.cert.at
 
-echo "Download IPv4 table from 'qualle.cert.at'."
-whois -h qualle.cert.at block origin v4table > ipasn.dat
-echo "Download IPv6 table from 'qualle.cert.at'."
-whois -h qualle.cert.at block origin v6table >> ipasn.dat
+cd /tmp
+mkdir bgproutingtable
+cd bgproutingtable
+
+echo "Download IPv4 table from '$BGPROUTER'."
+whois -h $BGPROUTER block origin v4table > ipasn.dat
+echo "Download IPv6 table from '$BGPROUTER'."
+whois -h $BGPROUTER block origin v6table >> ipasn.dat
 
 echo "Convert format"
 sed -i 's/^v[46]*table //' ipasn.dat
@@ -27,7 +29,7 @@ if [[ $(wc -l ipasn.dat | awk '{print $1}') -lt 650000 ]]; then
     exit 1
 fi
 
-python3 -c "import pyasn; pyasn.pyasn('/tmp/qualle/ipasn.dat')" > /dev/null
+python3 -c "import pyasn; pyasn.pyasn('/tmp/bgproutingtable/ipasn.dat')" > /dev/null
 if [[ $? -ne 0 ]]; then
     echo "Unparseable data."
     exit 1
@@ -37,4 +39,4 @@ echo "Applying new data to '/opt/intelmq/var/lib/bots/asn_lookup/'."
 mv ipasn.dat  /opt/intelmq/var/lib/bots/asn_lookup/
 
 cd ..
-rmdir /tmp/qualle
+rmdir /tmp/bgproutingtable
