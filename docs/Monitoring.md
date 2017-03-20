@@ -41,7 +41,7 @@ IntelMQ MUST implement a "PERFMON" syslog facility at the INFO log level. This P
   
 Example:
 ```
-    shadowserver-parser | 112 | 2 | 10020 | 
+    shadowserver-parser | 112 | 2 | 10020 | 87
 ```
 How to read this: the shadowserver parser reports that after it's run it processed 114 events. 2 out of these it could not process.
 The processing took 10020 nanosecs (10.02 microsecs) with an average processing time of 87 nanosecs per event.
