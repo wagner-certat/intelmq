@@ -51,7 +51,10 @@ Take care that no data will be lost, the statement may not be complete!
 Also note that size constraints have changed!
 ```SQL
 ALTER TABLE events
-   ADD COLUMN "feed.documentation" text
+   ADD COLUMN "feed.documentation" text,
+   ADD COLUMN "notify" boolean,
+   ADD COLUMN "sent_at" timestamp with time zone,
+   ADD COLUMN "shareable_extra_info" json;
 
 UPDATE events
    SET "source.local_hostname"="destination.local_hostname",
@@ -135,6 +138,9 @@ ALTER TABLE events
    ADD COLUMN "malware.hash.md5" text,
    ADD COLUMN "malware.hash.sha1" text,
    ADD COLUMN "protocol.transport" text,
+   ADD COLUMN "rtir_incident_id" integer,
+   ADD COLUMN "rtir_investigation_id" integer,
+   ADD COLUMN "rtir_report_id" integer,
    ALTER COLUMN "extra" SET DATA TYPE json,
    RENAME COLUMN "additional_information" TO "extra",
    RENAME COLUMN "description.target" TO "event_description.target",
