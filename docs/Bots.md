@@ -5,6 +5,8 @@
 3. [Experts](#experts)
 4. [Outputs](#outputs)
 
+## General remarks
+
 By default all of the bots are started when you start the whole botnet, however there is a possibility to 
 *disable* a bot. This means that the bot will not start every time you start the botnet, but you can start 
 and stop the bot if you specify the bot explicitly. To disable a bot, add the following to your 
@@ -12,6 +14,48 @@ and stop the bot if you specify the bot explicitly. To disable a bot, add the fo
 described in this file). It is set outside of the `parameters` object in `runtime.conf`. Check the 
 [User-Guide](./User-Guide.md) for an example.
 
+There are two different types of parameters: The initialization parameters are need to start the bot. The runtime parameters are needed by the bot itself during runtime.
+
+The initialization parameters are in the first level, the runtime parameters live in the `parameters` sub-dictionary:
+
+```json
+{
+    "bot-id": {
+        "parameters": {
+            runtime parameters...
+        },
+        initialization parameters...
+    }
+}
+```
+For example:
+```json
+{
+    "abusech-feodo-domains-collector": {
+        "parameters": {
+            "provider": "Abuse.ch",
+            "feed": "Abuse.ch Feodo Domains",
+            "http_url": "http://example.org/feodo-domains.txt"
+        },
+        "name": "Generic URL Fetcher",
+        "group": "Collector",
+        "module": "intelmq.bots.collectors.http.collector_http",
+        "description": "collect report messages from remote hosts using http protocol",
+        "enabled": true,
+        "run_mode": "scheduled"
+    }
+}
+```
+
+This configration resides in the file `runtime.conf` in your intelmq's configuration directory for each configured bot.
+
+## Initialization parameters
+
+* `name` and `description`: The name and description of the bot as can be found in BOTS-file, not used by the bot itself.
+* `group`: Can be `"Collector"`, `"Parser"`, `"Expert"` or `"Output"`. Only used for visualization by other tools.
+* `module`: The executable (should be in `$PATH`) which will be started.
+* `enabled`: If the parameter is set to `true` (which is NOT the default value if it is missing as a protection) the bot will start when the botnet is started (`intelmqctl start`). If the parameter was set to `false`, the Bot will not be started by `intelmqctl start`, however you can run the bot independently using `intelmqctl start <bot_id>`. Check the [User-Guide](./User-Guide.md) for more details.
+* `run_mode`: There are two run modes, "continuous" (default run mode) or "scheduled". In the first case, the bot will be running forever until stopped or exits because of errors (depending on configuration). In the latter case, the bot will stop after one successful run. This is especially useful when scheduling bots via cron or systemd. Default is `continuous`. Check the [User-Guide](./User-Guide.md) for more details.
 
 <a name="collectors"></a>
 ## Collectors
@@ -167,7 +211,7 @@ If the stream is interrupted, the connection will be aborted using the timeout p
 
 ### Request Tracker
 
-        
+
 #### Information:
 * `name:` intelmq.bots.collectors.rt.collector_rt
 * `lookup:` yes
@@ -191,7 +235,7 @@ If the stream is interrupted, the connection will be aborted using the timeout p
 * `url_regex`: regular expression of an URL to search for in the ticket
 * `attachment_regex`: regular expression of an attachment in the ticket
 * `unzip_attachment`: whether to unzip a found attachment
-        
+
 * * *
 
 ### XMPP collector
@@ -222,6 +266,7 @@ If the stream is interrupted, the connection will be aborted using the timeout p
 
 ### Alien Vault OTX
 
+See the README.md
 
 #### Information:
 * `name:` intelmq.bots.collectors.alienvault_otx.collector
@@ -235,32 +280,59 @@ If the stream is interrupted, the connection will be aborted using the timeout p
 * **Feed parameters** (see above)
 * `api_key`: location of information resource (e.g. FIXME)
 
+* * *
 
+### Blueliv Crimeserver
+
+See the README.md
+
+#### Information:
+* `name:` intelmq.bots.collectors.blueliv.collector_crimeserver
+* `lookup:` yes
+* `public:` no
+* `cache (redis db):` none
+* `description:` collect report messages from Blueliv API
+
+#### Configuration Parameters:
+
+* **Feed parameters** (see above)
+* `api_key`: location of information resource
+
+* * *
+
+### N6Stomp
+
+See the README.md
+
+#### Information:
+* `name:` intelmq.bots.collectors.n6.collector_stomp
+* `lookup:` yes
+* `public:` no
+* `cache (redis db):` none
+* `description:` collect report messages from Blueliv API
+
+#### Configuration Parameters:
+
+* **Feed parameters** (see above)
+* `exchange`: exchange point as given by CERT.pl
+* `port`: 61614
+* `server`: hostname e.g. "n6stream.cert.pl"
+* `ssl_ca_certificate`: path to CA file
+* `ssl_client_certificate`: path to client cert file
+* `ssl_client_certificate_key`: path to client cert key file
 
 
 <a name="parsers"></a>
 ## Parsers
 
-### \<ParserBot\>
-
-#### Information:
-* `name:`
-* `lookup:`
-* `public:`
-* `cache (redis db):`
-* `description:`
-
-#### Configuration Parameters:
-
-* `<parameter>`: \<text\>
-
-
-
+TODO
 
 <a name="experts"></a>
 ## Experts
 
 ### Abusix
+
+See the README.md
 
 #### Information:
 * `name:` abusix
@@ -277,6 +349,8 @@ FIXME
 * * *
 
 ### ASN Lookup
+
+See the README.md
 
 #### Information:
 * `name:` ASN lookup
@@ -324,6 +398,8 @@ FIXME
 
 ### Deduplicator
 
+See the README.md
+
 #### Information:
 * `name:` deduplicator
 * `lookup:` redis cache
@@ -334,36 +410,6 @@ FIXME
 #### Configuration Parameters:
 
 Please check this [README](../intelmq/bots/experts/deduplicator/README.md) file.
-
-* * *
-
-### Filter
-
-#### Information:
-* `name:` filter
-* `lookup:` none
-* `public:` yes
-* `cache (redis db):` none
-* `description:` filter messages (drop or pass messages) FIXME
-
-#### Configuration Parameters:
-
-FIXME
-
-* * *
-
-### MaxMind GeoIP
-
-#### Information:
-* `name:` maxmind-geoip
-* `lookup:` local database
-* `public:` yes
-* `cache (redis db):` none
-* `description:` IP to geolocation
-
-#### Configuration Parameters:
-
-FIXME
 
 * * *
 
@@ -390,44 +436,16 @@ The fields in `keys` will be removed from events.
 
 * * *
 
-### Reverse DNS
+### Filter
+
+See the README.md
 
 #### Information:
-* `name:` reverse-dns
-* `lookup:` dns
-* `public:` yes
-* `cache (redis db):` 8
-* `description:` IP to domain
-
-#### Configuration Parameters:
-
-FIXME
-
-* * *
-
-### RipeNCC Abuse Contact
-
-#### Information:
-* `name:` ripencc-abuse-contact
-* `lookup:` https api
-* `public:` yes
-* `cache (redis db):` 9
-* `description:` IP to abuse contact
-
-#### Configuration Parameters:
-
-FIXME
-
-* * *
-
-### Taxonomy
-
-#### Information:
-* `name:` taxonomy
-* `lookup:` local config
+* `name:` filter
+* `lookup:` none
 * `public:` yes
 * `cache (redis db):` none
-* `description:` use eCSIRT taxonomy to classify events (classification type to classification taxonomy)
+* `description:` filter messages (drop or pass messages) FIXME
 
 #### Configuration Parameters:
 
@@ -435,18 +453,111 @@ FIXME
 
 * * *
 
-### Tor Nodes
+### Generic DB Lookup
+
+See the README.md
+
+* * *
+
+### Squelcher
+
+The configuration defines a TTL based on matching fields. The bot looks in the
+event table if an event has been sent to the customer in the time frame defined
+by the TTL using the IP, classification type and classification identifier.
+If an event has been found, we set notify to false, otherwise to true.
+Only events with notify flag set to true are considered for the lookups.
+
+Edge cases:
+If no ASN is present, we ignore the event and set the flag to false.
+If no IP is present, but an FQDN , we always set the flag to true.
+if `extra._origin` equals `"dnsmalware"`, the flag is always set to false.
 
 #### Information:
-* `name:` tor-nodes
+* `name:` squelcher
+* `lookup:` postgres
+* `public:` yes
+* `cache (redis db):` -
+* `description:` Sets the `notify` field to true or false depending on past notifications
+
+#### Configuration Parameters:
+
+ * `autocommit`: use transactions per statement (`true`) or per connection (`false`)
+ * `configuration_path`: path to the squelcher configuration file, e.g. `"/opt/intelmq/etc/squelcher.conf"`
+ * `database`: postgres database
+ * `host"` postgres host
+ * `password`: postgres password
+ * `port`: postgres port (usually 5432)
+ * `sslmode`: e.g. `"require"`
+ * `table`: postgres table
+ * `user`: postgres user
+
+##### Configuration syntax
+
+The file must by valid JSON and must contain a list with lists containing two
+dictionaries. The first is compared to the event and thus has the same layout.
+The second dictionary has only one field `"ttl"` with the TTL as value.
+
+```json
+[
+    [
+        {
+            "source.asn": 0,
+            "source.network": "192.0.2.0/24",
+            "source.ip": "192.0.2.1",
+            "classification.type": "vulnerable service"
+        }, {
+            "ttl": 3600
+        }
+    ]
+]
+```
+
+The first dictionary must be a sub-set of the event -> All given fields
+must exist in the event with the given values.
+The `source.network` field is checked separately with the IP in the event (if
+the `source.ip` is in the given network block). The same applies to the
+additional `source.iprange` field (holding a list of two items, the start and
+end IP address).
+
+More examples can be found in `intelmq/etc/squelcher.conf`.
+
+#### Database index
+
+For a good performance, create this index:
+```sql
+create index idx_squelch on events("source.ip", "time.source");
+```
+
+### Gethostbyname
+
+#### Information:
+* `name:` gethostbyname
+* `lookup:` dns
+* `public:` yes
+* `cache (redis db):` none
+* `description:` DNS name (fqdn) to IP
+
+#### Configuration Parameters:
+
+none
+
+* * *
+
+### MaxMind GeoIP
+
+See the README.md
+
+#### Information:
+* `name:` maxmind-geoip
 * `lookup:` local database
 * `public:` yes
 * `cache (redis db):` none
-* `description:` check if IP is tor node
+* `description:` IP to geolocation
 
 #### Configuration Parameters:
 
 FIXME
+
 
 * * *
 
@@ -549,6 +660,106 @@ Assume we have an event with `feed.name = Spamhaus Cert` and `malware.name = feo
 
 If the rule is a string, a regex-search is performed, also for numeric values (`str()` is called on them). If the rule is numeric for numeric values, a simple comparison is done. If other types are mixed, a warning will be thrown.
 
+* * *
+
+### Reverse DNS
+
+#### Information:
+* `name:` reverse-dns
+* `lookup:` dns
+* `public:` yes
+* `cache (redis db):` 8
+* `description:` IP to domain
+
+#### Configuration Parameters:
+
+FIXME
+
+* * *
+
+### RFC1918
+
+Several RFCs define IPs and Hostnames (and TLDs) reserved for documentation:
+
+Sources:
+* https://tools.ietf.org/html/rfc1918
+* https://tools.ietf.org/html/rfc2606
+* https://tools.ietf.org/html/rfc3849
+* https://tools.ietf.org/html/rfc4291
+* https://tools.ietf.org/html/rfc5737
+* https://en.wikipedia.org/wiki/IPv4
+
+#### Information:
+* `name:` rfc1918
+* `lookup:` none
+* `public:` yes
+* `cache (redis db):` none
+* `description:` removes events or single fiels with invalid data
+
+#### Configuration Parameters:
+
+* `fields`: list of fields to look at. e.g. "destination.ip,source.ip,source.url"
+* `policy`: list of policies, e.g. "del,drop,drop". `drop` drops the entire event, `del` removes the field.
+
+* * *
+
+### RipeNCC Abuse Contact
+
+#### Information:
+* `name:` ripencc-abuse-contact
+* `lookup:` https api
+* `public:` yes
+* `cache (redis db):` 9
+* `description:` IP to abuse contact
+
+#### Configuration Parameters:
+
+FIXME
+
+* * *
+
+### Taxonomy
+
+#### Information:
+* `name:` taxonomy
+* `lookup:` local config
+* `public:` yes
+* `cache (redis db):` none
+* `description:` use eCSIRT taxonomy to classify events (classification type to classification taxonomy)
+
+#### Configuration Parameters:
+
+FIXME
+
+* * *
+
+### Tor Nodes
+
+See the README.md
+
+#### Information:
+* `name:` tor-nodes
+* `lookup:` local database
+* `public:` yes
+* `cache (redis db):` none
+* `description:` check if IP is tor node
+
+#### Configuration Parameters:
+
+FIXME
+
+### Url2FQDN
+
+#### Information:
+* `name:` url2fqdn
+* `lookup:` none
+* `public:` yes
+* `cache (redis db):` none
+* `description:` writes domain name from URL to FQDN
+
+#### Configuration Parameters:
+
+* `overwrite`: boolean, replace existing fqdn?
 
 <a name="outputs"></a>
 ## Outputs
