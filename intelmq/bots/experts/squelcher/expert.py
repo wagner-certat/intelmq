@@ -105,7 +105,7 @@ class SquelcherExpertBot(Bot):
                 self.cur.execute(SELECT_QUERY, (ttl, event['classification.type'],
                                                 event['classification.identifier'],
                                                 event['source.ip']) +
-                                                (self.parameters.sending_time_interval, ) * 2)
+                                               (self.parameters.sending_time_interval, ) * 2)
                 result = self.cur.fetchone()[0]
             else:  # never notify with ttl -1
                 result = 1
