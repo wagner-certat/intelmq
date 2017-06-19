@@ -53,9 +53,6 @@ CHANGELOG
 - `bots.collectors.microsoft.collector_interlow`: added for MS interflow API
   - Automatic ungzipping for .gz files.
 
-### Harmonization
-- Renamed `JSON` to `JSONDict` and added a new type `JSON`. `JSONDict` saves data internally as JSON, but acts like a dictionary. `JSON` accepts any valid JSON.
-
 #### Parsers
 - changed feednames in `bots.parsers.shadowserver`. Please refer to it's README for the exact changes.
 - shadowserver parser: If the conversion function fails for a line, an error is raised and the offending line will be handled according to the error handling configuration.
