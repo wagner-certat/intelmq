@@ -4,13 +4,17 @@ Squelcher Expert marks events as new or old depending on a TTL(ASN, Net, IP).
 """
 from __future__ import unicode_literals
 from ipaddress import ip_address, ip_network
-import psycopg2
 
 import json
 import netaddr
 
 from intelmq.lib.bot import Bot
 from intelmq.lib.utils import load_configuration
+
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
 
 
 SELECT_QUERY = '''
@@ -30,6 +34,9 @@ class SquelcherExpertBot(Bot):
         self.config = load_configuration(self.parameters.configuration_path)
 
         self.logger.debug("Connecting to PostgreSQL.")
+        if psycopg2 is None:
+            raise ValueError('Could not import psycopg2. Please install it.')
+
         try:
             if hasattr(self.parameters, 'connect_timeout'):
                 connect_timeout = self.parameters.connect_timeout

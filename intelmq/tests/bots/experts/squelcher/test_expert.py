@@ -2,13 +2,16 @@
 from __future__ import unicode_literals
 
 import pkg_resources
-import psycopg2
 import unittest
+import os
 
 from intelmq import RUNTIME_CONF_FILE
 import intelmq.lib.test as test
 import intelmq.lib.utils as utils
 from intelmq.bots.experts.squelcher.expert import SquelcherExpertBot
+
+if os.environ.get('INTELMQ_TEST_DATABASES'):
+    import psycopg2
 
 
 INSERT_QUERY = '''
