@@ -31,6 +31,7 @@ class Bot(object):
     """ Not to be reset when initialized again on reload. """
     __current_message = None
     __message_counter = 0
+    __message_counter_start = None
     # Bot is capable of SIGHUP delaying
     sighup_delay = True
 
@@ -60,13 +61,7 @@ class Bot(object):
             self.__check_bot_id(bot_id)
             self.__bot_id = bot_id
 
-            if self.parameters.logging_handler == 'syslog':
-                syslog = self.parameters.logging_syslog
-            else:
-                syslog = False
-            self.logger = utils.log(self.__bot_id, syslog=syslog,
-                                    log_path=self.parameters.logging_path,
-                                    log_level=self.parameters.logging_level)
+            self.__init_logger()
         except Exception:
             self.__log_buffer.append(('critical', traceback.format_exc()))
             self.stop()
@@ -279,6 +274,9 @@ class Bot(object):
         except BaseException:
             pass
 
+        if self.__message_counter:
+            self.logger.info("Processed %d messages since last logging.", self.__message_counter)
+
         self.__disconnect_pipelines()
 
         if self.logger:
@@ -350,8 +348,13 @@ class Bot(object):
 
             self.logger.debug("Sending message.")
             self.__message_counter += 1
-            if self.__message_counter % 500 == 0:
-                self.logger.info("Processed %s messages.", self.__message_counter)
+            if not self.__message_counter_start:
+                self.__message_counter_start = datetime.datetime.now()
+            if self.__message_counter % self.parameters.log_processed_messages_count == 0 or \
+               datetime.datetime.now() - self.__message_counter_start > self.parameters.log_processed_messages_seconds:
+                self.logger.info("Processed %d messages since last logging.", self.__message_counter)
+                self.__message_counter = 0
+                self.__message_counter_start = datetime.datetime.now()
 
             raw_message = libmessage.MessageFactory.serialize(message)
             self.__destination_pipeline.send(raw_message)
@@ -410,7 +413,7 @@ class Bot(object):
             with open(dump_file, 'r') as fp:
                 dump_data = json.load(fp)
                 dump_data.update(new_dump_data)
-        except ValueError:
+        except (ValueError, FileNotFoundError):
             dump_data = new_dump_data
 
         with open(dump_file, 'w') as fp:
@@ -429,6 +432,8 @@ class Bot(object):
             setattr(self.parameters, option, value)
             self.__log_configuration_parameter("defaults", option, value)
 
+        self.parameters.log_processed_messages_seconds = datetime.timedelta(seconds=self.parameters.log_processed_messages_seconds)
+
     def __load_system_configuration(self):
         if os.path.exists(SYSTEM_CONF_FILE):
             self.__log_buffer.append(('warning', "system.conf is deprecated "
@@ -445,6 +450,7 @@ class Bot(object):
     def __load_runtime_configuration(self):
         self.logger.debug("Loading runtime configuration from %r.", RUNTIME_CONF_FILE)
         config = utils.load_configuration(RUNTIME_CONF_FILE)
+        reinitialize_logging = False
 
         if self.__bot_id in list(config.keys()):
             params = config[self.__bot_id]
@@ -456,6 +462,24 @@ class Bot(object):
             for option, value in params.items():
                 setattr(self.parameters, option, value)
                 self.__log_configuration_parameter("runtime", option, value)
+                if option.startswith('logging_'):
+                    reinitialize_logging = True
+
+        if reinitialize_logging:
+            self.logger.handlers = []  # remove all existing handlers
+            self.__init_logger()
+
+    def __init_logger(self):
+        """
+        Initialize the logger.
+        """
+        if self.parameters.logging_handler == 'syslog':
+            syslog = self.parameters.logging_syslog
+        else:
+            syslog = False
+        self.logger = utils.log(self.__bot_id, syslog=syslog,
+                                log_path=self.parameters.logging_path,
+                                log_level=self.parameters.logging_level)
 
     def __load_pipeline_configuration(self):
         self.logger.debug("Loading pipeline configuration from %r.", PIPELINE_CONF_FILE)
@@ -535,7 +559,18 @@ class Bot(object):
         else:
             self.proxy = None
 
-        self.http_timeout = getattr(self.parameters, 'http_timeout', 60)
+        self.http_timeout_sec = getattr(self.parameters, 'http_timeout_sec', None)
+        self.http_timeout_max_tries = getattr(self.parameters, 'http_timeout_max_tries', 1)
+        # Be sure this is always at least 1
+        self.http_timeout_max_tries = self.http_timeout_max_tries if self.http_timeout_max_tries >= 1 else 1
+        # Handle deprecated parameter http_timeout
+        if hasattr(self.parameters, 'http_timeout'):
+            if not self.http_timeout_sec:
+                self.logger.warning("Found deprecated parameter 'http_timeout', please use 'http_timeout_sec'.")
+                self.http_timeout_sec = self.parameters.http_timeout
+            elif self.http_timeout_sec != self.parameters.http_timeout:
+                self.logger.warning("parameter 'http_timeout_sec' will overwrite deprecated parameter 'http_timeout'.")
+            # otherwise they are equal -> ignore
 
         self.http_header['User-agent'] = self.parameters.http_user_agent
 
