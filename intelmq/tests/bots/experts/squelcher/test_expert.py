@@ -5,9 +5,7 @@ import pkg_resources
 import unittest
 import os
 
-from intelmq import RUNTIME_CONF_FILE
 import intelmq.lib.test as test
-import intelmq.lib.utils as utils
 from intelmq.bots.experts.squelcher.expert import SquelcherExpertBot
 
 if os.environ.get('INTELMQ_TEST_DATABASES'):
@@ -91,6 +89,7 @@ INPUT_RANGE = {"__type": "Event",
 
 
 @test.skip_database()
+@test.skip_exotic()
 class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     """
     A TestCase for SquelcherExpertBot.

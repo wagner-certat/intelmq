@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from ipaddress import ip_address, ip_network
 
 import json
-import netaddr
 
 from intelmq.lib.bot import Bot
 from intelmq.lib.utils import load_configuration
@@ -15,7 +14,10 @@ try:
     import psycopg2
 except ImportError:
     psycopg2 = None
-
+try:
+    import netaddr
+except ImportError:
+    netaddr = None
 
 SELECT_QUERY = '''
 SELECT COUNT(*) FROM {table}
@@ -36,6 +38,8 @@ class SquelcherExpertBot(Bot):
         self.logger.debug("Connecting to PostgreSQL.")
         if psycopg2 is None:
             raise ValueError('Could not import psycopg2. Please install it.')
+        if netaddr is None:
+            raise ValueError('Could not import netaddr. Please install it.')
 
         try:
             if hasattr(self.parameters, 'connect_timeout'):
