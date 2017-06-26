@@ -2,13 +2,14 @@
 from __future__ import unicode_literals
 
 import pkg_resources
-import psycopg2
 import unittest
+import os
 
-from intelmq import RUNTIME_CONF_FILE
 import intelmq.lib.test as test
-import intelmq.lib.utils as utils
 from intelmq.bots.experts.squelcher.expert import SquelcherExpertBot
+
+if os.environ.get('INTELMQ_TEST_DATABASES'):
+    import psycopg2
 
 
 INSERT_QUERY = '''
@@ -88,6 +89,7 @@ INPUT_RANGE = {"__type": "Event",
 
 
 @test.skip_database()
+@test.skip_exotic()
 class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     """
     A TestCase for SquelcherExpertBot.
@@ -97,20 +99,19 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
     def set_bot(cls):
         cls.bot_reference = SquelcherExpertBot
         cls.default_input_message = INPUT1
-        try:
-            cls.sysconfig = (utils.load_configuration(RUNTIME_CONF_FILE)
-                             ['Expert']['Squelcher'])
-        except:
-            cls.sysconfig = {"configuration_path": pkg_resources.resource_filename('intelmq',
-                                                                                   'etc/squelcher.conf'),
-                             "host": "localhost",
-                             "port": 5432,
-                             "database": "intelmq",
-                             "user": "intelmq",
-                             "password": "intelmq",
-                             "sslmode": "require",
-                             "table": "tests",
-                             }
+        if not os.environ.get('INTELMQ_TEST_DATABASES'):
+            return
+        cls.sysconfig = {"configuration_path": pkg_resources.resource_filename('intelmq',
+                                                                               'etc/squelcher.conf'),
+                         "host": "localhost",
+                         "port": 5432,
+                         "database": "intelmq",
+                         "user": "intelmq",
+                         "password": "intelmq",
+                         "sslmode": "require",
+                         "table": "tests",
+                         "logging_level": "DEBUG",
+                         }
         cls.con = psycopg2.connect(database=cls.sysconfig['database'],
                                    user=cls.sysconfig['user'],
                                    password=cls.sysconfig['password'],
@@ -227,6 +228,8 @@ class TestSquelcherExpertBot(test.BotTestCase, unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        if not os.environ.get('INTELMQ_TEST_DATABASES'):
+            return
         cls.cur.execute("TRUNCATE TABLE {}".format(cls.sysconfig['table']))
         cls.cur.close()
         cls.con.close()
