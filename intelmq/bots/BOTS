@@ -597,7 +597,7 @@
                 "host": "localhost",
                 "password": "<password>",
                 "port": 5432,
-                "sending_time_interval": "2 days",
+                "sending_time_interval": "4 days",
                 "sslmode": "require",
                 "table": "events",
                 "user": "intelmq"
