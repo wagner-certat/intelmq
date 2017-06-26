@@ -345,9 +345,9 @@ class IntelMQCLIContollerTemplate():
         self.parser.add_argument('-n', '--dry-run', action='store_true',
                                  help='Do not store anything or change anything. Just simulate.')
 
-        self.parser.add_argument('--time-interval', nargs='+', default='2 days',
+        self.parser.add_argument('--time-interval', nargs='+', default='4 days',
                                  help='time interval, parseable by postgres.'
-                                      'defaults to "2 days".')
+                                      'defaults to "4 days".')
 
         self.init()
 
