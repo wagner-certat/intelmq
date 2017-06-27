@@ -659,15 +659,6 @@
                 "username": "<your amqp username>"
             }
         },
-        "CERT.at Mail Alert": {
-            "description": "sends an event as JSON via email.",
-            "module": "intelmq.bots.outputs.certat_mail_alert.output",
-            "parameters": {
-                "from_addr": "sender@example.com",
-                "to_addr": "recipient@example.com",
-                "mail_server": "example.com"
-            }
-        },
         "Elasticsearch": {
             "description": "Elasticsearch is the bot responsible to send events to a elasticsearch.",
             "module": "intelmq.bots.outputs.elasticsearch.output",
