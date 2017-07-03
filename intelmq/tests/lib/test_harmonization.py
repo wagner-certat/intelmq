@@ -375,10 +375,14 @@ class TestHarmonization(unittest.TestCase):
     def test_asn_invalid(self):
         """ Test ASN.is_valid with invalid arguments. """
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.assertFalse(harmonization.ASN.is_valid(4294967296))
 =======
         self.assertFalse(harmonization.ASN.is_valid(4294967295))
 >>>>>>> b46c26b1... ENH: New ASN harmonization type
+=======
+        self.assertFalse(harmonization.ASN.is_valid(4294967296))
+>>>>>>> 38bbb04e... BUG: ASN allow 465535 and 294967295
         self.assertFalse(harmonization.ASN.is_valid(0))
         self.assertFalse(harmonization.ASN.is_valid('foo'))
         self.assertFalse(harmonization.ASN.is_valid('1234'))
