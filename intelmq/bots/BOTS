@@ -877,11 +877,6 @@
                 "xmpp_room_password": null,
                 "use_muc": false
             }
-        },
-        "ZoneH": {
-            "description": "ZoneH CSV report parser",
-            "module": "intelmq.bots.parsers.zoneh.parser",
-            "parameters": {}
         }
     }
 }
