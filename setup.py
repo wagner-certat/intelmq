@@ -11,9 +11,9 @@ REQUIRES = [
     'psutil>=1.2.1',
     'python-dateutil>=2.5',
     'python-termstyle>=0.1.10',
-    'pytz>=2014.1',
-    'redis>=2.10.3',
-    'requests>=2.7.0',
+    'pytz>=2012c',
+    'redis>=2.10',
+    'requests>=2.2.0',
     'tabulate>=0.7.5',
     'rt>=1.0.9',
 ]
