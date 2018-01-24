@@ -2173,7 +2173,7 @@ id: spamhaus-asn-drop-parser
 
 **Configuration Parameters:**
 ```
-if: sucuri-collector
+id: sucuri-collector
 feed: Sucuri Hidden Iframes,
 http_url: http://labs.sucuri.net/?malware,
 rate_limit: 129600
