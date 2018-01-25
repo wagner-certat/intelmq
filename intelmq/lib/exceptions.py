@@ -69,18 +69,16 @@ class IntelMQHarmonizationException(IntelMQException):
 
 
 '''
-    IntelMQ Harmonization Exception SubClasses
+    IntelMQ Harmonization Exception sub classes
 '''
 
 
 class InvalidValue(IntelMQHarmonizationException):
 
-    def __init__(self, key, value, reason=''):
-        if not reason:
-            reason = ': ' + reason
-        message = ("invalid value {value!r} ({type}) for key {key!r} {reason}"
+    def __init__(self, key, value, reason=None):
+        message = ("invalid value {value!r} ({type}) for key {key!r}{reason}"
                    "".format(value=value, type=type(value), key=key,
-                             reason=reason))
+                             reason=': ' + reason if reason else ''))
         super(InvalidValue, self).__init__(message)
 
 

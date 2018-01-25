@@ -1,4 +1,4 @@
-# Shadowserver-Parser Readme
+# Shadowserver-Parser README
 
 ## Structure of this Parser Bot:
 The parser consists of two files:
@@ -17,31 +17,52 @@ Add the Shadowserver parser to your Botnet.
 
 Set at least the parameter `feedname`. it is required to find the correct
 configuration. If this parameter is not set or not correct, the bot fail!
-Feed-names are the Names of the Shadowserver Format specification pages.
-E.g. `Botnet-Drone-Hadoop` for the feed corresponding to:
-https://www.shadowserver.org/wiki/pmwiki.php/Services/Botnet-Drone-Hadoop
+Feed-names are the subjects of the Shadowserver E-Mails.
+They are different from the wiki page names!
 
 Possible feednames:
-* `DNS-open-resolvers`
-* `Open-MongoDB`
-* `Open-Elasticsearch`
-* `Open-SNMP`
-* `Ssl-Scan`
-* `Open-Redis`
-* `Open-Memcached`
-* `Open-mDNS`
-* `Open-TFTP`
-* `Open-NetBIOS`
-* `NTP-Monitor`
-* `Open-SSDP`
-* `Open-Chargen`
-* `Open-Portmapper`
-* `Botnet-Drone-Hadoop`
-* `Open-IPMI`
-* `Open-MSSQL`
-* `Sinkhole-HTTP-Drone`
+* `Accessible-Cisco-Smart-Install`
+* `Accessible-CWMP`
+* `Accessible-RDP`
+* `Accessible-Telnet`
+* `Blacklisted-IP`
+* `Compromised-Website`
+* `Drone`
+* `DNS-Open-Resolvers`
 * `Microsoft-Sinkhole`
+* `NTP-Monitor`
+* `NTP-Version`
+* `Open-Chargen`
+* `Open-Elasticsearch`
+* `Open-IPMI`
+* `Open-LDAP`
+* `Open-mDNS`
+* `Open-Memcached`
+* `Open-MongoDB`
+* `Open-MSSQL`
+* `Open-NATPMP`
+* `Open-NetBIOS-Nameservice`
+* `Open-Netis`
+* `Open-Portmapper`
+* `Open-QOTD`
+* `Open-Redis`
+* `Open-SNMP`
+* `Open-SSDP`
+* `Open-TFTP`
+* `Open-XDMCP`
+* `Sandbox-URL`
+* `Sinkhole-HTTP-Drone`
+* `Spam-URL`
+* `SSL-FREAK-Vulnerable-Servers`
+* `SSL-POODLE-Vulnerable-Servers`
+* `Vulnerable-ISAKMP`
 
+Additionally these deprecated names can still be used until removed in version 1.3:
+* `Botnet-Drone-Hadoop` for `Drone`
+* `DNS-open-resolvers` for `DNS-Open-Resolvers`
+* `Open-NetBIOS` for `Open-NetBIOS-Nameservice`
+* `Ssl-Freak-Scan` for `SSL-FREAK-Vulnerable-Servers`
+* `Ssl-Scan` for `SSL-POODLE-Vulnerable-Servers`
 
 ## Add new Feedformats:
 Add a new feedformat and conversions if required to the file

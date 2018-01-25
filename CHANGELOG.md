@@ -1,17 +1,265 @@
 CHANGELOG
 ==========
 
-v1.0.0.dev7 (in development, master branch)
------------
+1.1.0 (unreleased)
+------------------
+Support for Python 3.3 has been dropped, it reached its end of life.
+
+### Tools
+- `intelmqctl start` prints bot's error messages if it failed to start
+- `intelmqctl check` checks for defaults.conf completeness
+- `intelmqctl list bots -q` only prints the IDs of enabled bots
+
+### Core
+- use SIGTERM instead of SIGINT to stop bots (#981)
+- Subitems in fields of type `JSONDict` (see below) can be accessed directly. E.g. you can do:
+  event['extra.foo'] = 'bar'
+  event['extra.foo'] # gives 'bar'
+  It is still possible to set and get the field as whole, however this may be removed or changed in the future:
+  event['extra'] = '{"foo": "bar"}'
+  event['extra'] # gives '{"foo": "bar"}'
+  "Old" bots and configurations compatible with 1.0.x do still work.
+  Also, the extra field is now properly exploded when exporting events, analogous to all other fields.
+- intelmq.lib.message.Message.add: The parameter overwrite accepts now three different values: True, False and None (new).
+  True: An existing value will be overwritten
+  False: An existing value will not be overwritten (previously and exception has been raised when the value was raised).
+  None (default): If the value exists an KeyExists Exception is thrown (previously the same as False).
+  This allows shorter code in the bots, as an 'overwrite' configuration parameter can be directly passed to the function.
+- Bots can specify a static method `check(parameters)` which can perform individual checks specific to the bot.
+  These functions will be called by `intelmqctl check` if the bot is configured with the given parameters
+- Add `RewindableFileHandle` to utils making handling of CSV files more easy (optionally)
+
+### Bots
+#### Collectors
+- Mail:
+  - New parameters; `sent_from`: filter messages by sender, `sent_to`: filter messages by recipient
+  - More debug logs
+- bots.experts.maxmind_geoip: New (optional) parameter `overwrite`, by default false. The current default was to overwrite!
+- `bots.collectors.n6.collector_stomp`: renamed to `bots.collectors.stomp.collector` (#716)
+- bots.collectors.rt:
+  - New parameter `search_requestor` to search for field Requestor.
+  - Empty strings and `null` as value for search parameters are ignored.
+  - Empty parameters `attachment_regex` and `url_regex` handled.
+
+#### Parsers
+- changed feednames in `bots.parsers.shadowserver`. Please refer to it's README for the exact changes.
+- shadowserver parser: If the conversion function fails for a line, an error is raised and the offending line will be handled according to the error handling configuration.
+  Previouly errors like these were only logged and ignored otherwise.
+- added destination.urlpath and source.urlpath to harmonization.
+- changed feednames in `bots.parsers.shadowserver`. Please refer to it's README for the exact changes.
+- The Generic CSV Parser `bots.parsers.generic.parser_csv`:
+  - It is possible to filter the data before processing them using the new parameters `filter_type` and `filter_text`.
+  - It is possible to specify multiple coulmns using `|` character in parameter `columns`.
+  - The parameter `time_format` now supports `'epoch_millis'` for seconds since the Epoch, milliseconds are supported but not used.
+- renamed `bots.parsers.cymru_full_bogons.parser` to `bots.parsers.cymru.parser_full_bogons`, compatibility shim will be removed in version 2.0
+- added `bots.parsers.cymru.parser_cap_program`
+- added `intemq.bots.parsers.zoneh.parser` for ZoneH feeds
+- added `intemq.bots.parsers.sucuri.parser`
+
+#### Experts
+- Added sieve expert for filtering and modifying events (#1083)
+
+### Harmonization
+- Renamed `JSON` to `JSONDict` and added a new type `JSON`. `JSONDict` saves data internally as JSON, but acts like a dictionary. `JSON` accepts any valid JSON.
+- fixed regex for `protocol.transport` it previously allowed more values than it should have.
+- New ASN type. Like integer but checks the range.
+
+### Requirements
+- Requests is no longer listed as dependency of the core. For depending bots the requirement is noted in their REQUIREMENTS.txt file
+
+1.0.3 Bugfix release (unreleased)
+---------------------------------
+### Contrib
+* logrotate: use sudo for postrotate script
+* cron-jobs: use the scripts in the bots' directories and link them
+
+### Core
+- warnings of bots are catched by the logger (#1074)
+- Bots stop when redis gives the error "OOM command not allowed when used memory > 'maxmemory'.".
+
+### Harmonization
+- Rule for harmonization keys is enforced (#1104)
+
+### Bots
+#### Collectors
+- bots.collectors.mail.collector_mail_attach: Support attachment file parsing for imbox versions newer than 0.9.5
+- bots.collectors.stomp.collectos: Heartbeat timeout is now logged with log level info instead of warning.
+- bots.outputs.smtp.output: Fix STARTTLS, threw an exception (#1152)
+
+#### Parsers
+- All CSV parsers ignore NULL-bytes now, because the csv-library cannot handle it (#967)
+- Modify Bot default ruleset: changed conficker rule to catch more spellings
+- Shadowserver Parser: Add Accessible Cisco Smart Install
+- CleanMX Phising Parser: Handle new columns `first` and `last` (#1131).
+- CleanMX Phishing Parser: Replace CSV-based parser with XML-based parser fixing regular parser errors. This requires a change of the URL in the collector. (#1135)
+- n6 parser: Fix classification mappings. See NEWS file for changes values.
+
+### Documentation
+- fix example configuration for modify expert
+- add release procedure documentation
+
+### Tools
+- intelmqctl now exits with exit codes > 0 when errors happened or the operation was not successful. Also, the status operation exits with 1, if bots are stopped, but enabled. (#997)
+
+### Tests
+- `tests/lib/test_pipeline`: Redis tests clear all queues before and after tests (#1086)
+= Repaired debian package build on travis (#1169)
+- Warnings are not allowed by default, an allowed count can be specified (#1129).
+
+### Packaging
+* cron jobs: fix paths of executables
+
+1.0.2 Bugfix release (2017-11-09)
+---------------------------------
+
+### Core
+- `lib.message.add`: parameter force has finally been removed, should have been gone in 1.0.0.rc1 already
+
+### Bots
+- `collectors.mail.collector_mail_url`: Fix bug which prevented marking emails seen due to disconnects from server (#852).
+- `parsers.spamhaus.parser_cert`: Handle/ignore 'AS?' in feed (#1111)
+
+### Packaging
+- The following changes have been in effect for the built packages already since version 1.0.0
+- Support building for more distributions, now supported: CentOS 7, Debian 8 and 9, Fedora 25 and 26, RHEL 7, openSUSE Leap 42.2 and 42.3 and Tumbleweed, Ubuntu 14.04 and 16.04
+- Use LSB-paths for created packages (/etc/intelmq/, /var/lib/intelmq/, /run/intelmq/) (#470). Does does not affect installations with setuptools/pip.
+- Change the debian package format from native to quilt
+- Fix problems in postint and postrm scripts
+- Use systemd-tmpfile for creation of /run/intelmq/
+
+### Documentation
+- Add disclaimer on maxmind database in bot documentation and code and the cron-job (#1110)
+
+1.0.1 Bugfix release (2017-08-30)
+---------------------------------
+### Documentation
+- Feeds: use more https:// URLs
+- minor fixes
+
+### Bots
+- bots/experts/ripencc_abuse_contact/expert.py: Use HTTPS URLs for rest.db.ripe.net
+- bots/outputs/file/output.py: properly close the file handle on shutdown
+- bots/parser/shadowserver: If conversion of a value via conversion function fails, only log the function name, not the representation string (#1157).
+
+### Core
+- lib/bot: Bots will now log the used intelmq version at startup
+
+### Tools
+- intelmqctl: To check the status of a bot, the command line of the running process is compared to the actual executable of the bot. Otherwise unrelated programs with the same PID are detected as running bot.
+- intelmqctl: enable, disable, check, clear now support the JSON output
+
+1.0.0 Stable release (2017-08-04)
+---------------------------------
+### Core
+- Fixes a thrown FileNotFound exception when stopping bots started with `intelmqctl run ...`
+
+### Harmonization
+- leading dots in FQDNs are rejected and removed in sanitation (#1022, #1030)
+
+### Bots
+- shadowserver parser Accessible-SMB: smb_implant is converted to bool
+
+1.0.0.rc1 Release candidate (2017-07-05)
+----------------------------------------
+### Core
+- Changing the value of an existing field to `None` deletes the field.
+- `Message.update` now behaves like `dict.update`. The old behavior is implemented in `Message.change`
+- Deprecated `http_ssl_proxy` has been dropped, use `https_proxy` instead
+- Deprecated `http_timeout` has been dropped, use `http_timeout_sec` instead
+- Deprecated parameters force and ignore of `Message.add` have been removed
+- Deprecated method `Message.contains` has been removed
+- Drop support for deprecated configuration files `startup.conf` and `system.conf`
+
+### Development
+- We are now testing with and without optional libraries/lowest recommended versions and most current versions of required libraries
+- Tests shadowserver with more data and checks for warnings and errors
+- Tests: if bots log warnings this counts as failure if not allowed explicitly
+- Tests: Bot preparation can be skipped
+
+### Documentation
+- The branching/releasing mechanism has been documented
+
+### Bots
+#### Collectors
+- HTTP collectors: If http_username and http_password are both given and empty or null, 'None:None' has been used to authenticate. It is now checked that the username evaulates to non-false/null before adding the authentication. (fixes #1017)
+- Dropped unmaintained and undocumented FTP(S) collectors `bots.collectors.ftp`. Also, the FTPS collector had a license conflict (#842).
+- `bots.collectors.http.collector_http_stream`: drop deprecated parameter `url` in favor of `http_url`
+
+#### Parsers
+- Removed bots.parsers.openbl as the source is offline since end of may (#1018, https://twitter.com/sshblorg/status/854669263671615489)
+- Removed bots.parsers.proxyspy as the source is offline (#1031)
+- Shadowserver: Added Accessible SMB
+- `bots.experts.ripencc_abuse_contact` now has the two additional parameters `query_ripe_stat_asn` and `query_ripe_stat_ip`.
+  Deprecated parameter `query_ripe_stat`. New parameter `mode`.
+- `bots.experts.certat_contact` has been renamed to `bots.experts.national_cert_contact_certat` (#995)
+- `bots.experts.cymru_whois` ignores registry `other` (#996)
+- `bots.parsers.alienvault.parser_otx`: handle timestamps without floating point seconds
+
+### Experts
+- bots.experts.deduplicator: New parameter `bypass` to deactivate deduplication, default: False
+
+v1.0.0.dev8 Beta release (2017-06-14)
+-------------------------------------
+
+### General changes
+- It's now configurable how often the bots are logging how much events they have sent, based on both the amount and time. (fixes #743)
+- switch from pycodestyle to pep8
+
+### Configuration
+- Added `log_processed_messages_count` (500) and `log_processed_messages_seconds` (900) to defaults.conf.
+- `http_timeout` has been renamed to `http_timeout_sec` and `http_timeout_max_tries` has been added.
+   This setting is honored by bots.collectors.http.* and bots.collectors.mail.collector_mail_url, bots.collectors.rt (only `http_timeout_sec`), bots.outputs.restapi.output and bots.experts.ripencc_abuse_contact
+
+### Documentation
+- Minor fixes
+- Dropped install scripts, see INSTALL.md for more detailed instructions and explanations
+- Better structure of INSTALL.md
+- Better documentation of packages
+
+### Tools
+- added a bot debugger (https://github.com/certtools/intelmq/pull/975)
+- missing bot executable is detected and handled by intelmqctl (https://github.com/certtools/intelmq/pull/979)
+
+### Core
+- fix bug which prevented dumps to be written if the file did not exist (https://github.com/certtools/intelmq/pull/986)
+- Fix reload of bots regarding logging
+- type annotions for all core libraries
+
+### Bots
+- added bots.experts.idea, bots.outputs.files
+- possibility to split large csv Reports into Chunks, currently possible for mail url and file collector
+- elasticsearch output supports HTTP Basic Auth
+- bots.collectors.mail.collector_mail_url and bots collectors.file.collector can split large reports (https://github.com/certtools/intelmq/pull/680)
+- bots.parsers.shadowserver support the VNC feed
+- handling of HTTP timeouts, see above https://github.com/certtools/intelmq/pull/859
+- bots.parsers.bambenek saves the malware name
+- bots.parsers.fraunhofer.parser_dga saves the malware name
+- bots.parsers.shadowserver handles NULL bytes
+- bots.parsers.abusech.parser_ransomware handles the IP 0.0.0.0 specially
+
+### Harmonization
+- New field named `output` to support export to foreign formats
+
+v1.0.0.dev7 Beta release (2017-05-09)
+-------------------------------------
+
+### Documentation
+- more verbose installation and upgrade instructions
 
 ### Bot changes
-- ENH: added bots.experts.field_reducer.expert
+- added bots.experts.field_reducer, bots.outputs.smtp
+- bots.collectors.alienvault_otx: OTX library has been removed, install it as package instead
+- bots.experts.deduplicator: `ignore_keys` has been renamed to `filter_keys` and `filter_type` has been removed.
+- bots.experts.modify: The configration is now list-based for a consistent ordering
+- bots.experts.tor_node as an optional parameter `overwrite`
+- API keys will be removed from feed.url if possible
 
 ### Harmonization
 - New parameter and field named feed.documentation to link to documentation of the feed
+- classification.taxonomy is lower case only
 
-v1.0.0.dev6
------------
+v1.0.0.dev6 Beta release (2017-01-11)
+-------------------------------------
 
 Changes between 0.9 and 1.0.0.dev6
 
@@ -68,7 +316,7 @@ Changes between 0.9 and 1.0.0.dev6
 - changed configuration syntax for bots.experts.modify to a more simple variant
 
 #### Outputs
-- added: amqp, elasticsearch, redis, restapi, stomp, tcp, udp, xmpp
+- added: amqp, elasticsearch, redis, restapi, smtp, stomp, tcp, udp, xmpp
 - removed: debug, intelmqmailer (broken), logcollector
 - enhanced all outputs
 
@@ -120,6 +368,7 @@ Changes between 0.9 and 1.0.0.dev6
 - New parameter and field named feed.accuracy to represent the accuracy of each feed
 - New parameter and field named feed.provider to document the name of the source of each feed
 - New field `classification.identifier`
+-`classification.taxonomy` is now lower case only
 
 ### Known issues
  - Harmonization: hashes are not normalized and classified, see also issue #394 and pull #634

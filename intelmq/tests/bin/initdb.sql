@@ -26,6 +26,7 @@ CREATE TABLE events (
     "destination.reverse_dns" text,
     "destination.tor_node" boolean,
     "destination.url" text,
+    "destination.urlpath" text,
     "event_description.target" text,
     "event_description.text" text,
     "event_description.url" text,
@@ -44,6 +45,7 @@ CREATE TABLE events (
     "malware.version" text,
     "misp.attribute_uuid" varchar(36),
     "misp.event_uuid" varchar(36),
+    "output" json,
     "protocol.application" varchar(100),
     "protocol.transport" varchar(11),
     "raw" text,
@@ -73,6 +75,7 @@ CREATE TABLE events (
     "source.reverse_dns" text,
     "source.tor_node" boolean,
     "source.url" text,
+    "source.urlpath" text,
     "status" text,
     "time.observation" timestamp with time zone,
     "time.source" timestamp with time zone

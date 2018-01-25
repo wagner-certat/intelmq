@@ -26,7 +26,7 @@ class ShadowserverParserBot(ParserBot):
         self.sparser_config = None
         if hasattr(self.parameters, 'feedname'):
             self.feedname = self.parameters.feedname
-            self.sparser_config = config.get_feed(self.feedname)
+            self.sparser_config = config.get_feed(self.feedname, self.logger)
 
         if not self.sparser_config:
             self.logger.error('No feedname provided or feedname not in conf.')
@@ -44,11 +44,9 @@ class ShadowserverParserBot(ParserBot):
             if self.parameters.overwrite:
                 self.overwrite = True
 
-        # Already warned about deprecation
-        self.depr_warning = False
-
     def parse(self, report):
         raw_report = utils.base64_decode(report["raw"])
+        raw_report = raw_report.translate({0: None})
         csvr = csv.DictReader(io.StringIO(raw_report))
 
         # create an array of fieldnames,
@@ -91,8 +89,8 @@ class ShadowserverParserBot(ParserBot):
         for item in conf.get('required_fields'):
             intelmqkey, shadowkey = item[:2]
             if shadowkey not in fields:  # key does not exist in data (not even in the header)
-                self.logger.warning('Required key {!r} not found data. Possible change in data'
-                                    ' format or misconfiguration.'.format(shadowkey))
+                self.logger.warning('Required key %r not found data. Possible change in data'
+                                    ' format or misconfiguration.', shadowkey)
             if len(item) > 2:
                 conv_func = item[2]
             else:
@@ -118,8 +116,8 @@ class ShadowserverParserBot(ParserBot):
         for item in conf.get('optional_fields'):
             intelmqkey, shadowkey = item[:2]
             if shadowkey not in fields:  # key does not exist in data (not even in the header)
-                self.logger.warning('Optional key {!r} not found data. Possible change in data'
-                                    ' format or misconfiguration.'.format(shadowkey))
+                self.logger.warning('Optional key %r not found data. Possible change in data'
+                                    ' format or misconfiguration.', shadowkey)
                 continue
             if len(item) > 2:
                 conv_func = item[2]
@@ -134,12 +132,12 @@ class ShadowserverParserBot(ParserBot):
                 else:
                     try:
                         value = conv_func(raw_value)
-                    except:
-                        self.logger.error('Could not convert shadowkey: "{}", ' +
-                                          'value: "{}" via conversion function {}.'.format(shadowkey, raw_value, repr(conv_func)))
-                        value = None
-                        # """ fail early and often in this case. We want to be able to convert everything """
-                        # self.stop()
+                    except Exception:
+                        """ fail early and often in this case. We want to be able to convert everything """
+                        self.logger.error('Could not convert shadowkey: %r, '
+                                          'value: %r via conversion function %r.',
+                                          shadowkey, raw_value, conv_func.__name__)
+                        raise
 
             if value is not None:
                 if intelmqkey == 'extra.':
@@ -150,10 +148,7 @@ class ShadowserverParserBot(ParserBot):
                     event.add(intelmqkey, value)
                     fields.remove(shadowkey)
                 except InvalidValue:
-                    self.logger.debug(
-                        'Could not add key {!r};'
-                        ' adding it to extras.'.format(shadowkey)
-                    )
+                    self.logger.debug('Could not add key %r adding it to extras.', shadowkey)
                 except InvalidKey:
                     extra[intelmqkey] = value
                     fields.remove(shadowkey)
@@ -161,7 +156,7 @@ class ShadowserverParserBot(ParserBot):
                 fields.remove(shadowkey)
 
         # Now add additional constant fields.
-        dict.update(event, conf.get('constant_fields', {}))  # TODO: rewrite in 1.0
+        event.update(conf.get('constant_fields', {}))
 
         event.add('raw', self.recover_line(row))
 

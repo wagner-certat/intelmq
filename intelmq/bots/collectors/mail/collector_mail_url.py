@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-
 import re
-
+import io
+import imaplib
 import requests
-
-from intelmq.lib.bot import CollectorBot
 
 try:
     import imbox
 except ImportError:
     imbox = None
+
+from intelmq.lib.bot import CollectorBot
+from intelmq.lib.splitreports import generate_reports
 
 
 class MailURLCollectorBot(CollectorBot):
@@ -22,12 +23,23 @@ class MailURLCollectorBot(CollectorBot):
         # Build request
         self.set_request_parameters()
 
-    def process(self):
+        self.chunk_size = getattr(self.parameters, 'chunk_size', None)
+        self.chunk_replicate_header = getattr(self.parameters,
+                                              'chunk_replicate_header', None)
+
+    def connect_mailbox(self):
+        self.logger.debug("Connecting to %s.", self.parameters.mail_host)
         mailbox = imbox.Imbox(self.parameters.mail_host,
                               self.parameters.mail_user,
                               self.parameters.mail_password,
                               self.parameters.mail_ssl)
-        emails = mailbox.messages(folder=self.parameters.folder, unread=True)
+        return mailbox
+
+    def process(self):
+        mailbox = self.connect_mailbox()
+        emails = mailbox.messages(folder=self.parameters.folder, unread=True,
+                                  sent_to=getattr(self.parameters, "sent_to", None),
+                                  sent_from=getattr(self.parameters, "sent_from", None))
 
         if emails:
             for uid, message in emails:
@@ -35,7 +47,11 @@ class MailURLCollectorBot(CollectorBot):
                 if (self.parameters.subject_regex and
                         not re.search(self.parameters.subject_regex,
                                       re.sub("\r\n\s", " ", message.subject))):
+                    self.logger.debug("Message with date %s skipped because subject %r does not match.",
+                                      message.date, message.subject)
                     continue
+
+                erroneous = False  # If errors occurred this will be set to true.
 
                 for body in message.body['plain']:
                     match = re.search(self.parameters.url_regex, str(body))
@@ -45,13 +61,28 @@ class MailURLCollectorBot(CollectorBot):
                         # carriage returns
                         url = url.strip()
 
-                        self.logger.info("Downloading report from %r." % url)
-                        resp = requests.get(url=url,
-                                            auth=self.auth, proxies=self.proxy,
-                                            headers=self.http_header,
-                                            verify=self.http_verify_cert,
-                                            cert=self.ssl_client_cert,
-                                            timeout=self.http_timeout)
+                        self.logger.info("Downloading report from %r.", url)
+                        timeoutretries = 0
+                        resp = None
+                        while timeoutretries < self.http_timeout_max_tries and resp is None:
+                            try:
+                                resp = requests.get(url=url,
+                                                    auth=self.auth, proxies=self.proxy,
+                                                    headers=self.http_header,
+                                                    verify=self.http_verify_cert,
+                                                    cert=self.ssl_client_cert,
+                                                    timeout=self.http_timeout_sec)
+
+                            except requests.exceptions.Timeout:
+                                timeoutretries += 1
+                                self.logger.warn("Timeout whilst downloading the report.")
+
+                        if resp is None and timeoutretries >= self.http_timeout_max_tries:
+                            self.logger.error("Request timed out %i times in a row. " %
+                                              timeoutretries)
+                            erroneous = True
+                            # The download timed out too often, leave the Loop.
+                            continue
 
                         if resp.status_code // 100 != 2:
                             raise ValueError('HTTP response status code was {}.'
@@ -59,15 +90,29 @@ class MailURLCollectorBot(CollectorBot):
 
                         self.logger.info("Report downloaded.")
 
-                        report = self.new_report()
-                        report.add("raw", resp.content)
-                        self.send_message(report)
+                        template = self.new_report()
+
+                        for report in generate_reports(template, io.BytesIO(resp.content),
+                                                       self.chunk_size,
+                                                       self.chunk_replicate_header):
+                            self.send_message(report)
 
                         # Only mark read if message relevant to this instance,
                         # so other instances watching this mailbox will still
                         # check it.
-                        mailbox.mark_seen(uid)
-                self.logger.info("Email report read.")
+                        try:
+                            mailbox.mark_seen(uid)
+                        except imaplib.abort:
+                            # Disconnect, see https://github.com/certtools/intelmq/issues/852
+                            mailbox = self.connect_mailbox()
+                            mailbox.mark_seen(uid)
+
+                if not erroneous:
+                    self.logger.info("Email report read.")
+                else:
+                    self.logger.error("Email report read with errors, the report was not processed.")
+        else:
+            self.logger.debug("No unread mails to check.")
         mailbox.logout()
 
 

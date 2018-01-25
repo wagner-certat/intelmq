@@ -109,8 +109,9 @@ class Redis(Pipeline):
             try:
                 self.pipe.lpush(destination_queue, message)
             except Exception as exc:
-                if 'Cannot assign requested address' in exc.args[0]:
-                    raise MemoryError
+                if 'Cannot assign requested address' in exc.args[0] or\
+                   "OOM command not allowed when used memory > 'maxmemory'." in exc.args[0]:
+                    raise MemoryError(exc.args[0])
                 elif 'Redis is configured to save RDB snapshots, but is currently not able to persist on disk' in exc.args[0]:
                     raise IOError(28, 'No space left on device. Redis can\'t save its snapshots.')
                 raise exceptions.PipelineError(exc)
@@ -124,11 +125,16 @@ class Redis(Pipeline):
                 try:
                     self.pipe.lpush(destination_queue, message)
                 except Exception as exc:
+                    if 'Cannot assign requested address' in exc.args[0] or\
+                       "OOM command not allowed when used memory > 'maxmemory'." in exc.args[0]:
+                        raise MemoryError(exc.args[0])
+                    elif 'Redis is configured to save RDB snapshots, but is currently not able to persist on disk' in exc.args[0]:
+                        raise IOError(28, 'No space left on device. Redis can\'t save its snapshots.')
                     raise exceptions.PipelineError(exc)
 
     def receive(self):
         if self.source_queue is None:
-            raise exceptions.ConfigurationError('pipeline', 'No source queue gievn.')
+            raise exceptions.ConfigurationError('pipeline', 'No source queue given.')
         try:
             retval = self.pipe.lindex(self.internal_queue, -1)  # returns None if no value
             if not retval:

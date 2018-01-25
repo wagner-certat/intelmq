@@ -34,10 +34,13 @@ The available feeds are grouped by the source of the feeds. For each feed the co
 - [Proxyspy](#proxyspy)
 - [Shadowserver](#shadowserver)
 - [Spamhaus](#spamhaus)
+- [Sucuri](#sucuri)
 - [Taichung](#taichung)
 - [Turris Greylist](#turris-greylist)
+- [University of Toulouse Blacklist](#university-of-toulouse-blacklist)
 - [URLVir](#urlvir)
 - [VXVault](#vxvault)
+- [ZoneH](#zoneh)
 
 <!-- /TOC -->
 
@@ -131,7 +134,7 @@ http_url: https://ransomwaretracker.abuse.ch/feeds/csv/
 
 ### Parser Bot
 
-**Bot Name:** Abuse.ch Ranswomware
+**Bot Name:** Abuse.ch Ransomware
 
 **Bot Module:** intelmq.bots.parsers.abusech.parser_ransomware
 
@@ -357,7 +360,7 @@ id: bambenek-c2-domains-collector
 provider: Bambenek
 feed: Bambenek C2 Domains
 rate_limit: FIXME
-http_url: http://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt
+http_url: https://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt
 ```
 
 ### Parser Bot
@@ -372,7 +375,7 @@ id: bambenek-c2-domains-parser
 ```
 
 **Notes:** Master Feed of known, active and non-sinkholed C&Cs domain names.
-License: http://osint.bambenekconsulting.com/license.txt
+License: https://osint.bambenekconsulting.com/license.txt
 
 ## C2 IPs
 
@@ -390,7 +393,7 @@ id: bambenek-c2-ips-collector
 provider: Bambenek
 feed: Bambenek C2 IPs
 rate_limit: FIXME
-http_url: http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt
+http_url: https://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt
 ```
 
 ### Parser Bot
@@ -405,7 +408,7 @@ id: bambenek-c2-ips-parser
 ```
 
 **Notes:** Master Feed of known, active and non-sinkholed C&Cs IP addresses
-License: http://osint.bambenekconsulting.com/license.txt
+License: https://osint.bambenekconsulting.com/license.txt
 
 ## DGA Domains
 
@@ -423,7 +426,7 @@ id: bambenek-dga-domains-collector
 provider: Bambenek
 feed: Bambenek DGA Domains
 rate_limit: FIXME
-http_url: http://osint.bambenekconsulting.com/feeds/dga-feed.txt
+http_url: https://osint.bambenekconsulting.com/feeds/dga-feed.txt
 ```
 
 ### Parser Bot
@@ -438,7 +441,7 @@ id: bambenek-dga-domains-parser
 ```
 
 **Notes:** Domain feed of known DGA domains from -2 to +3 days
-License: http://osint.bambenekconsulting.com/license.txt
+License: https://osint.bambenekconsulting.com/license.txt
 
 
 # Bitcash
@@ -457,7 +460,7 @@ id: bitcash-collector
 provider: BitCash
 feed: BitCash
 rate_limit: FIXME
-http_url: http://bitcash.cz/misc/log/blacklist
+http_url: https://bitcash.cz/misc/log/blacklist
 ```
 
 ## Parser Bot
@@ -488,7 +491,7 @@ id: bitcash-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-apache-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de Apache
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/apache.txt
@@ -505,7 +508,7 @@ http_url: https://lists.blocklist.de/lists/apache.txt
 id: blocklistde-apache-parser
 ```
 
-**Notes:** BlockList.DE Apache Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service Apache, Apache-DDOS, RFI-Attacks.
+**Notes:** Blocklist.DE Apache Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service Apache, Apache-DDOS, RFI-Attacks.
 
 ## Bots
 
@@ -520,7 +523,7 @@ id: blocklistde-apache-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-bots-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de Bots
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/bots.txt
@@ -537,7 +540,7 @@ http_url: https://lists.blocklist.de/lists/bots.txt
 id: blocklistde-bots-parser
 ```
 
-**Notes:** BlockList.DE Bots Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks attacks on the RFI-Attacks, REG-Bots, IRC-Bots or BadBots (BadBots = he has posted a Spam-Comment on a open Forum or Wiki).
+**Notes:** Blocklist.DE Bots Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks attacks on the RFI-Attacks, REG-Bots, IRC-Bots or BadBots (BadBots = he has posted a Spam-Comment on a open Forum or Wiki).
 
 ## Brute-force Logins
 
@@ -552,7 +555,7 @@ id: blocklistde-bots-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-bruteforce-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de Brute-force Logins
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/bruteforcelogin.txt
@@ -569,7 +572,7 @@ http_url: https://lists.blocklist.de/lists/bruteforcelogin.txt
 id: blocklistde-bruteforce-parser
 ```
 
-**Notes:** BlockList.DE Brute-force Login Collector is the bot responsible to get the report from source of information. All IPs which attacks Joomlas, Wordpress and other Web-Logins with Brute-Force Logins.
+**Notes:** Blocklist.DE Brute-force Login Collector is the bot responsible to get the report from source of information. All IPs which attacks Joomlas, Wordpress and other Web-Logins with Brute-Force Logins.
 
 ## FTP
 
@@ -584,7 +587,7 @@ id: blocklistde-bruteforce-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-ftp-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de FTP
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/ftp.txt
@@ -601,7 +604,7 @@ http_url: https://lists.blocklist.de/lists/ftp.txt
 id: blocklistde-ftp-parser
 ```
 
-**Notes:** BlockList.DE FTP Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours for attacks on the Service FTP.
+**Notes:** Blocklist.DE FTP Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours for attacks on the Service FTP.
 
 ## IMAP
 
@@ -616,7 +619,7 @@ id: blocklistde-ftp-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-imap-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de IMAP
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/imap.txt
@@ -633,7 +636,7 @@ http_url: https://lists.blocklist.de/lists/imap.txt
 id: blocklistde-imap-parser
 ```
 
-**Notes:** BlockList.DE IMAP Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours for attacks on the Service IMAP, SASL, POP3.....
+**Notes:** Blocklist.DE IMAP Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours for attacks on the Service IMAP, SASL, POP3.....
 
 ## IRC Bots
 
@@ -648,7 +651,7 @@ id: blocklistde-imap-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-irc-bots-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de IRC Bots
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/ircbot.txt
@@ -678,7 +681,7 @@ id: blocklistde-mail-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-mail-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de Mail
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/mail.txt
@@ -695,7 +698,7 @@ http_url: https://lists.blocklist.de/lists/mail.txt
 id: blocklistde-mail-parser
 ```
 
-**Notes:** BlockList.DE Mail Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service Mail, Postfix.
+**Notes:** Blocklist.DE Mail Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service Mail, Postfix.
 
 ## SIP
 
@@ -710,7 +713,7 @@ id: blocklistde-mail-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-sip-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de SIP
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/sip.txt
@@ -727,7 +730,7 @@ http_url: https://lists.blocklist.de/lists/sip.txt
 id: blocklistde-sip-parser
 ```
 
-**Notes:** BlockList.DE SIP Collector is the bot responsible to get the report from source of information. All IP addresses that tried to login in a SIP-, VOIP- or Asterisk-Server and are included in the IPs-List from http://www.infiltrated.net/ (Twitter).
+**Notes:** Blocklist.DE SIP Collector is the bot responsible to get the report from source of information. All IP addresses that tried to login in a SIP-, VOIP- or Asterisk-Server and are included in the IPs-List from http://www.infiltrated.net/ (Twitter).
 
 ## SSH
 
@@ -742,7 +745,7 @@ id: blocklistde-sip-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-ssh-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de SSH
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/ssh.txt
@@ -759,7 +762,7 @@ http_url: https://lists.blocklist.de/lists/ssh.txt
 id: blocklistde-ssh-parser
 ```
 
-**Notes:** BlockList.DE SSH Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service SSH.
+**Notes:** Blocklist.DE SSH Collector is the bot responsible to get the report from source of information. All IP addresses which have been reported within the last 48 hours as having run attacks on the service SSH.
 
 ## Strong IPs
 
@@ -774,7 +777,7 @@ id: blocklistde-ssh-parser
 **Configuration Parameters:**
 ```
 id: blocklistde-strong-ips-collector
-provider: Blocklit.de
+provider: Blocklist.de
 feed: Blocklist.de Strong IPs
 rate_limit: 86400
 http_url: https://lists.blocklist.de/lists/strongips.txt
@@ -791,7 +794,7 @@ http_url: https://lists.blocklist.de/lists/strongips.txt
 id: blocklistde-strong-ips-parser
 ```
 
-**Notes:** BlockList.DE Strong IPs Collector is the bot responsible to get the report from source of information. All IPs which are older then 2 month and have more then 5.000 attacks.
+**Notes:** Blocklist.DE Strong IPs Collector is the bot responsible to get the report from source of information. All IPs which are older then 2 month and have more then 5.000 attacks.
 
 
 # Blueliv Crimeserver
@@ -876,15 +879,16 @@ id: cleanmx-phishing-collector
 provider: CleanMX
 feed: CleanMX Phishing
 rate_limit: 129600
-http_url: http://support.clean-mx.de/clean-mx/xmlphishing?response=alive&format=csv&domain=
+http_url: http://support.clean-mx.de/clean-mx/xmlphishing?response=alive&domain=
 http_user_agent: {{ your user agent }}
+http_timeout_sec: 120
 ```
 
 ### Parser Bot
 
 **Bot Name:** CleanMX Phishing
 
-**Bot Module:** intelmq.bots.parsers.cleanmx.parser_phishing
+**Bot Module:** intelmq.bots.parsers.cleanmx.parser
 
 **Configuration Parameters:**
 ```
@@ -907,19 +911,41 @@ id: cleanmx-virus-collector
 provider: CleanMX
 feed: CleanMX Virus
 rate_limit: 129600
-http_url: http://support.clean-mx.de/clean-mx/xmlviruses?response=alive&format=csv&domain=
+http_url: http://support.clean-mx.de/clean-mx/xmlviruses?response=alive&domain=
 http_user_agent: {{ your user agent }}
+http_timeout_sec: 120
 ```
 
 ### Parser Bot
 
 **Bot Name:** CleanMX Virus
 
-**Bot Module:** intelmq.bots.parsers.cleanmx.parser_virus
+**Bot Module:** intelmq.bots.parsers.cleanmx.parser
 
 **Configuration Parameters:**
 ```
 id: cleanmx-virus-parser
+```
+
+# Cymru CAP program
+
+http://www.team-cymru.org/CSIRT-AP.html
+
+**Status:** Active
+
+## Collector Bot
+
+Usually via HTTPS.
+
+## Parser Bot
+
+**Bot Name:** Cymru CAP Program
+
+**Bot Module:** intelmq.bots.parsers.cymru.parser_cap_program
+
+**Configuration Parameters:**
+```
+id: cymru-cap-program-parser
 ```
 
 # Cymru Full Bogons
@@ -945,7 +971,7 @@ http_url: https://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt
 
 **Bot Name:** Cymru Full Bogons
 
-**Bot Module:** intelmq.bots.parsers.cymru_full_bogons.parser
+**Bot Module:** intelmq.bots.parsers.cymru.parser_full_bogons
 
 **Configuration Parameters:**
 ```
@@ -1483,7 +1509,7 @@ id: malware-domains-collector
 provider: Malware Domains
 feed: Malware Domains
 rate_limit: 172800
-http_url: http://mirror2.malwaredomains.com/files/domains.txt
+http_url: http://mirror1.malwaredomains.com/files/domains.txt
 ```
 
 ## Parser Bot
@@ -1817,40 +1843,6 @@ id: nothink-telnet-parser
 **Notes:** This feed provides IP addresses of systems that have connected to a honeypot via Telnet in the last 24 hours.
 reference: http://www.nothink.org/honeypots.php
 
-
-# OpenBL
-
-**Status:** Active
-
-## Collector Bot
-
-**Bot Name:** Generic URL Fetcher
-
-**Bot Module:** intelmq.bots.collectors.http.collector_http
-
-**Configuration Parameters:**
-```
-id: openbl-collector
-provider: OpenBL
-feed: OpenBL
-rate_limit: 43200
-http_url: https://www.openbl.org/lists/date_all.txt
-```
-
-**Notes:** there is a list available [here](https://www.openbl.org/lists.html) with all blacklists available by the source which can be handled with the exact same bot, only `http_url` value needs to be specified.
-
-
-## Parser Bot
-
-**Bot Name:** OpenBL
-
-**Bot Module:** intelmq.bots.parsers.openbl.parser
-
-**Configuration Parameters:**
-```
-id: openbl-parser
-```
-
 # OpenPhish
 
 **Status:** Unknown
@@ -1910,39 +1902,6 @@ http_url: https://data.phishtank.com/data/{{ your API key }}/online-valid.csv
 ```
 id: phishtank-parser
 ```
-
-# Proxyspy
-
-**Status:** Active
-
-## Collector Bot
-
-**Bot Name:** Generic URL Fetcher
-
-**Bot Module:** intelmq.bots.collectors.http.collector_http
-
-**Configuration Parameters:**
-```
-id: proxyspy-collector
-provider: ProxySpy
-feed: ProxySpy
-rate_limit: FIXME
-http_url: http://txt.proxyspy.net/proxy.txt
-```
-
-## Parser Bot
-
-**Bot Name:** Proxyspy
-
-**Bot Module:** intelmq.bots.parsers.proxyspy.parser
-
-**Configuration Parameters:**
-```
-id: proxyspy-parser
-```
-
-**Notes:** This feed provides IP addresses, ports and country codes for available proxies.  Feed is updated hourly.
-
 
 # Shadowserver
 
@@ -2097,7 +2056,7 @@ http_url: https://www.spamhaus.org/drop/edrop.txt
 id: spamhaus-edrop-parser
 ```
 
-**Notes:** EDROP is an extension of the DROP list that includes suballocated netblocks controlled by spammers or cyber criminals. EDROP is meant to be used in addition to the direct allocations on the DROP list.
+**Notes:** EDROP is an extension of the DROP list that includes sub-allocated netblocks controlled by spammers or cyber criminals. EDROP is meant to be used in addition to the direct allocations on the DROP list.
 
 ## Dropv6
 
@@ -2163,6 +2122,38 @@ id: spamhaus-asn-drop-parser
 
 **Notes:** ASN-DROP contains a list of Autonomous System Numbers controlled by spammers or cyber criminals, as well as "hijacked" ASNs. ASN-DROP can be used to filter BGP routes which are being used for malicious purposes.
 
+# Sucuri
+
+## Sucuri Malware
+
+**Status:** Active
+
+### Collector Bot
+
+**Bot Name:** Generic URL Fetcher
+
+**Bot Module:** intelmq.bots.collectors.http.collector_http
+
+**Configuration Parameters:**
+```
+id: sucuri-collector
+feed: Sucuri Hidden Iframes
+http_url: http://labs.sucuri.net/?malware
+rate_limit: 86400
+```
+
+### Parser Bot
+
+**Bot Name:** Sucuri Security Parser
+
+**Bot Module:** intelmq.bots.parsers.sucuri.parser
+
+**Configuration Parameters:**
+```
+id: sucuri-parser
+```
+
+Please note that the parser only extracts the hidden iframes  and the conditional redirects, not the encoded javascript.
 
 # Taichung
 
@@ -2223,6 +2214,40 @@ http_url: https://www.turris.cz/greylist-data/greylist-latest.csv
 **Configuration Parameters:**
 ```
 id: turris-greylist-parser
+```
+
+# University of Toulouse Blacklist
+
+**Status:** Active
+
+### Collector Bot
+
+**Bot Name:** Generic URL Fetcher
+
+**Bot Module:** intelmq.bots.collectors.http.collector_http
+
+**Configuration Parameters:**
+```
+id: university-of-toulouse-<collection name>-collector
+provider: University of Toulouse Blacklist
+feed: UT1 <collection name>
+rate_limit: 43200
+http_url: https://dsi.ut-capitole.fr/blacklists/download/<collection name>.tar.gz
+extract_files: True for all or string of file names separated by ","
+```
+**Notes:** The collections and feed description can be found on: https://dsi.ut-capitole.fr/blacklists/.
+
+### Parser Bot
+
+**Bot Name:** Generic CSV
+
+**Bot Module:** intelmq.bots.parsers.generic.parser_csv
+
+**Configuration Parameters:**
+```
+delimiter: \n
+type: <depends on a collection>
+columns:  [<depends on a collection>]
 ```
 
 # URLVir
@@ -2322,3 +2347,36 @@ http_url: http://vxvault.net/URL_List.php
 id: vxvault-parser
 ```
 
+# ZoneH
+
+**Status:** Active
+
+## Collector Bot
+
+FIXME: Information how to get the feed, what kind of reports you can reveive
+
+**Bot Name:** Generic Mail Attachment Fetcher
+
+**Bot Module:** intelmq.bots.collectors.mail.collector_mail_attach
+
+**Configuration Parameters:**
+```
+id: zoneh-collector
+provider: ZoneH
+feed: ZoneH <feed type>
+rate_limit: FIXME
+subject_regex: FIXME
+attach_regex: FIXME
+attach_unzip: true
+```
+
+## Parser Bot
+
+**Bot Name:** ZoneH
+
+**Bot Module:** intelmq.bots.parsers.zoneh.parser
+
+**Configuration Parameters:**
+```
+id: zoneh-parser
+```

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-"""
+import os
+
 from intelmq.lib.bot import Bot
 
 try:
@@ -13,16 +13,15 @@ class ASNLookupExpertBot(Bot):
 
     def init(self):
         if pyasn is None:
-            self.logger.error('Could not import pyasn. Please install it.')
-            self.stop()
+            raise ValueError('Could not import pyasn. Please install it.')
 
         try:
             self.database = pyasn.pyasn(self.parameters.database)
         except IOError:
             self.logger.error("pyasn data file does not exist or could not be "
-                              "accessed in '%s'" % self.parameters.database)
+                              "accessed in %r.", self.parameters.database)
             self.logger.error("Read 'bots/experts/asn_lookup/README' and "
-                              "follow the procedure")
+                              "follow the procedure.")
             self.stop()
 
     def process(self):
@@ -47,6 +46,15 @@ class ASNLookupExpertBot(Bot):
 
         self.send_message(event)
         self.acknowledge_message()
+
+    @staticmethod
+    def check(parameters):
+        if not os.path.exists(parameters.get('database', '')):
+            return [["error", "File given as parameter 'database' does not exist."]]
+        try:
+            pyasn.pyasn(parameters['database'])
+        except Exception as exc:
+            return [["error", "Error reading database: %r." % exc]]
 
 
 BOT = ASNLookupExpertBot
