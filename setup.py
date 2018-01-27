@@ -6,6 +6,8 @@ import sys
 
 from setuptools import find_packages, setup
 
+from manutils import BuildManPage
+
 REQUIRES = [
     'dnspython>=1.11.1',
     'psutil>=1.2.1',
@@ -104,4 +106,7 @@ setup(
         'intelmq/bots/experts/maxmind_geoip/update-geoip-data',
         'intelmq/bots/experts/asn_lookup/update-asn-data',
     ],
+    cmdclass={
+        'build_manpage': BuildManPage,
+    },
 )
