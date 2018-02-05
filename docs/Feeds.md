@@ -26,6 +26,8 @@ The available feeds are grouped by the source of the feeds. For each feed the co
 - [Malware Domains](#malware-domains)
 - [MalwarePatrol Dans Guardian](#malwarepatrol-dans-guardian)
 - [N6](#n6)
+- [MalwarePatrol](#malwarepatrol)
+- [MalwareUrl](#malwareurl)
 - [Netlab 360](#netlab-360)
 - [Nothink](#nothink)
 - [OpenBL](#openbl)
@@ -1606,6 +1608,25 @@ id: n6-parser
 ```
 
 **Notes:** N6 Collector - CERT.pl's N6 Collector - N6 feed via STOMP interface. Note that rate_limit does not apply for this bot as it is waiting for messages on a stream.
+
+# MalwareUrl
+
+* **Status:** on
+* **Revision:** 05-02-2018
+* **Description:** Latest malicious domains.
+
+### Collector
+
+* **Module:** intelmq.bots.collectors.http.collector_http
+* **Configuration Parameters:**
+*  * `http_url`: `https://www.malwareurl.com/`
+*  * `rate_limit`: `86400`
+
+### Parser
+
+* **Module:** intelmq.bots.parsers.malwareurl.parser
+* **Configuration Parameters:**
+
 
 # Netlab 360
 
