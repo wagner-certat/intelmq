@@ -207,8 +207,8 @@ class Bot(object):
                         (datetime.datetime.now() - self.last_heartbeat) > self.heartbeat_time):
                     try:
                         requests.get(self.parameters.bot_heartbeat_url.format(bot_id=self.__bot_id))
-                    except Exception:
-                        self.logger.exception('heartbeat failed: requests.get() exception')
+                    except Exception as exc:
+                        self.logger.exception('heartbeat failed: requests.get() exception.  Reason: %r.' % exc.args[0])
                     else:
                         self.last_heartbeat = datetime.datetime.now()
 
