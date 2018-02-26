@@ -9,6 +9,7 @@ import locale
 import os
 import readline  # nopep8, hooks into input()
 import subprocess
+import sys
 import tempfile
 import zipfile
 
@@ -236,6 +237,7 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                     self.logger.warn('Not all investigations completed -> Can\'t resolve '
                                      'incident %d.', incident_id)
                     return False
+            return True
 
         finally:
             self.rt.logout()
@@ -491,7 +493,7 @@ Subject: {subj}
 def main():
     controller = IntelMQCLIContoller()
     if not controller.run():
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
