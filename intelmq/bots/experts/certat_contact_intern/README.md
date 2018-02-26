@@ -17,3 +17,12 @@ Apart from the columns with ASN and contacts, you should have a column like `tlp
  * By default `destination_visible` is true
  * If `feed.code` matches, `destination_visible` is false
    * If additionally `tlp-amber_example-feed` is true, the field `destination_visible` is true
+
+You also need a view which enforces these rules containing columns like:
+
+```sql
+...
+CASE WHEN events."destination_visible" THEN NULL ELSE events."destination.ip" END AS "destination.ip",
+...
+```
+instead of simply `events."destination.ip"`.
