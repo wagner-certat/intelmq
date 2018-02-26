@@ -130,12 +130,11 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
                 self.execute(lib.QUERY_OPEN_EVENT_IDS_BY_TAXONOMY, (taxonomy, ))
                 event_ids = [x['id'] for x in self.cur.fetchall()]
                 if self.subject:
-                    subject_line = self.subject
+                    subject = self.subject
                 else:
-                    subject_line = lib.SUBJECT[taxonomy]
-                subject = ('%s %s incidents on %s'
-                           '' % (len(event_ids), subject_line,
-                                 datetime.datetime.now().strftime('%Y-%m-%d')))
+                    subject = ('%s %s incidents on %s'
+                               '' % (len(event_ids), lib.SUBJECT[taxonomy],
+                                     datetime.datetime.now().strftime('%Y-%m-%d')))
 
                 if self.dryrun:
                     self.logger.info('Simulate creation of incident.')
@@ -286,12 +285,11 @@ class IntelMQCLIContoller(lib.IntelMQCLIContollerTemplate):
         ids = list(str(row['id']) for row in query)
 
         if self.subject:
-            subject_line = self.subject
+            subject = self.subject
         else:
-            subject_line = lib.SUBJECT[taxonomy]
-        subject = ('{tax} in your network: {date}'
-                   ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
-                             tax=subject_line))
+            subject = ('{tax} incidents in your network: {date}'
+                       ''.format(date=datetime.datetime.now().strftime('%Y-%m-%d'),
+                                 tax=lib.SUBJECT[taxonomy]))
         text = self.get_text(taxonomy)
         csvfile = io.StringIO()
         if lib.CSV_FIELDS:

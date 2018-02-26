@@ -876,8 +876,9 @@ id: cleanmx-phishing-collector
 provider: CleanMX
 feed: CleanMX Phishing
 rate_limit: 129600
-http_url: http://support.clean-mx.de/clean-mx/xmlphishing?response=alive&format=csv&domain=
+http_url: http://support.clean-mx.de/clean-mx/xmlphishing?response=alive&domain=
 http_user_agent: {{ your user agent }}
+http_timeout_sec: 120
 ```
 
 ### Parser Bot
@@ -907,8 +908,9 @@ id: cleanmx-virus-collector
 provider: CleanMX
 feed: CleanMX Virus
 rate_limit: 129600
-http_url: http://support.clean-mx.de/clean-mx/xmlviruses?response=alive&format=csv&domain=
+http_url: http://support.clean-mx.de/clean-mx/xmlviruses?response=alive&domain=
 http_user_agent: {{ your user agent }}
+http_timeout_sec: 120
 ```
 
 ### Parser Bot
@@ -920,6 +922,27 @@ http_user_agent: {{ your user agent }}
 **Configuration Parameters:**
 ```
 id: cleanmx-virus-parser
+```
+
+# Cymru CAP program
+
+http://www.team-cymru.org/CSIRT-AP.html
+
+**Status:** Active
+
+## Collector Bot
+
+Usually via HTTPS.
+
+## Parser Bot
+
+**Bot Name:** Cymru CAP Program
+
+**Bot Module:** intelmq.bots.parsers.cymru.parser_cap_program
+
+**Configuration Parameters:**
+```
+id: cymru-cap-program-parser
 ```
 
 # Cymru Full Bogons
@@ -945,7 +968,7 @@ http_url: https://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt
 
 **Bot Name:** Cymru Full Bogons
 
-**Bot Module:** intelmq.bots.parsers.cymru_full_bogons.parser
+**Bot Module:** intelmq.bots.parsers.cymru.parser_full_bogons
 
 **Configuration Parameters:**
 ```
@@ -2254,4 +2277,3 @@ http_url: http://vxvault.net/URL_List.php
 ```
 id: vxvault-parser
 ```
-
