@@ -54,6 +54,12 @@ optionally save the (new) address to the database linked to the ASNs.
 If you are ready to submit the incidents to RT and send the mails out, press
 's'.
 'b' for back jumps to the incident overview and 'q' quits.
+
+Exit codes:
+ 0 if no errors happend or only errors which could be handled. Check the
+   output if recoverable errors happened.
+ 1 if unrecoverable errors happened
+ 2 if user input or configuration is faulty
 """
 USAGE = '''
     intelmqcli
@@ -345,8 +351,6 @@ class IntelMQCLIContollerTemplate():
         self.parser.add_argument('--time-interval', nargs='+', default='4 days',
                                  help='time interval, parseable by postgres.'
                                       'defaults to "4 days".')
-
-        self.init()
 
     def setup(self):
         self.args = self.parser.parse_args()
