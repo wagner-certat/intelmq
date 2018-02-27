@@ -15,6 +15,7 @@ CHANGELOG
 #### Parsers
 
 #### Experts
+* `certat_contact_intern`: Added ability to handle tlp-amber only data.
 
 #### Outputs
 

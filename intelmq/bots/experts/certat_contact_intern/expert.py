@@ -40,7 +40,7 @@ class CERTatContactExpertBot(Bot):
             self.stop()
         self.logger.info("Connected to PostgreSQL.")
 
-        self.query = ('SELECT "{column}", "tlp-amber_{feed_code}" FROM "{table}" WHERE "{ascolumn}" = %s'
+        self.query = ('SELECT "{column}", "can-see-tlp-amber_{feed_code}" FROM "{table}" WHERE "{ascolumn}" = %s'
                       ''.format(table=self.parameters.table, column=self.parameters.column,
                                 feed_code=self.parameters.feed_code,
                                 ascolumn=self.parameters.ascolumn))

@@ -13,16 +13,16 @@ Parmeters
 Table layout
 ------------
 
-Apart from the columns with ASN and contacts, you should have a column like `tlp-amber_example-feed` where `example-feed` is a `feed.code`.
+Apart from the columns with ASN and contacts, you should have a column like `can-see-tlp-amber_example-feed` where `example-feed` is a `feed.code`.
  * By default `destination_visible` is true
  * If `feed.code` matches, `destination_visible` is false
-   * If additionally `tlp-amber_example-feed` is true, the field `destination_visible` is true
+   * If additionally `can-see-tlp-amber_example-feed` is true, the field `destination_visible` is true
 
 You also need a view which enforces these rules containing columns like:
 
 ```sql
 ...
-CASE WHEN events."destination_visible" THEN NULL ELSE events."destination.ip" END AS "destination.ip",
+CASE WHEN events."destination_visible" THEN events."destination.ip" ELSE NULL END AS "destination.ip",
 ...
 ```
 instead of simply `events."destination.ip"`.
