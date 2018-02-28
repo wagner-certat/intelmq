@@ -94,6 +94,8 @@ CHANGELOG
 - New ASN type. Like integer but checks the range.
 - Added new `classification.type` 'vulnerable client'
 - Added `(destination|source).domain_suffix` to hold the TLD/domain suffix.
+- New field 'tlp' for tlp level specification.
+ - New TLP type. Allows all four tlp levels, removes 'TLP:' prefix and converts to upper case.
 
 ### Requirements
 - Requests is no longer listed as dependency of the core. For depending bots the requirement is noted in their REQUIREMENTS.txt file
