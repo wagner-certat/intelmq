@@ -10,20 +10,21 @@ from intelmq.lib.utils import base64_decode
 
 MAPPING = {"description": "event_description.text",
            "externalid": "malware.name",
-           "tlplevel": "extra.tlp",
            "firstreporteddatetime": "time.source",
            "networksourceipv4": "source.ip",
            "networksourceport": "source.port",
            "networkdestinationipv4": "destination.ip",
            "networkdestinationport": "destination.port",
-           "isproductlicensed": "extra.isproductlicensed",
-           "ispartnershareable": "extra.ispartnershareable",
            "networksourceasn": "source.asn",
            "hostname": "destination.fqdn",
-           "useragent": "extra.user_agent",
-           "severity": "extra.severity",
-           "tags": "extra.tags",
            }
+EXTRA = {"tlplevel": "tlp",
+         "isproductlicensed": "isproductlicensed",
+         "ispartnershareable": "ispartnershareable",
+         "useragent": "user_agent",
+         "severity": "severity",
+         "tags": "tags",
+         }
 
 
 class MicrosoftCTIPParserBot(ParserBot):
@@ -44,6 +45,12 @@ class MicrosoftCTIPParserBot(ParserBot):
                     if key == "firstreporteddatetime":
                         ioc[key] += ' UTC'
                     event[value] = ioc[key]
+            extra = {}
+            for key, value in EXTRA.items():
+                if key in ioc and ioc[key]:
+                    extra[value] = ioc[key]
+            if extra:
+                event.add('extra', extra)
             event.add('feed.accuracy',
                       event.get('feed.accuracy', 100) * ioc['confidence'] / 100,
                       overwrite=True)
