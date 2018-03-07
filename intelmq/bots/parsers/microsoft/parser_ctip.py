@@ -47,6 +47,8 @@ class MicrosoftCTIPParserBot(ParserBot):
         for key, value in line.items():
             if key in ['version', 'indicatorthreattype', 'confidence', 'indicatorexpirationdatetime']:
                 continue
+            if value in ['', None]:
+                continue
             if key == "firstreporteddatetime":
                 value += ' UTC'
             if key == "hostname" and value == line["networkdestinationipv4"]:  # ignore IP in FQDN field
@@ -54,7 +56,7 @@ class MicrosoftCTIPParserBot(ParserBot):
             if key in MAPPING:
                 event[MAPPING[key]] = value
             else:
-                extra[MAPPING[key]] = value
+                extra[EXTRA[key]] = value
         if extra:
             event.add('extra', extra)
         event.add('feed.accuracy',
