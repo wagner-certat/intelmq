@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Parses CTIP data in JSON format.
+
+Key indicatorexpirationdatetime is ignored, meaning is unknown.
 """
 import json
 
 from intelmq.lib.bot import ParserBot
-from intelmq.lib.utils import base64_decode
 
 
 MAPPING = {"description": "event_description.text",
@@ -18,7 +19,8 @@ MAPPING = {"description": "event_description.text",
            "networksourceasn": "source.asn",
            "hostname": "destination.fqdn",
            }
-EXTRA = {"tlplevel": "tlp",
+EXTRA = {"additionalmetadata": "additionalmetadata",
+         "tlplevel": "tlp",
          "isproductlicensed": "isproductlicensed",
          "ispartnershareable": "ispartnershareable",
          "useragent": "user_agent",
@@ -28,37 +30,39 @@ EXTRA = {"tlplevel": "tlp",
 
 
 class MicrosoftCTIPParserBot(ParserBot):
-    def process(self):
-        report = self.receive_message()
-        for ioc in json.loads(base64_decode(report['raw'])):
-            raw = json.dumps(ioc, sort_keys=True)  # not applying formatting here
-            if ioc['version'] != 1.5:
-                raise ValueError('Data is in unknown format %r, only version 1.5 is supported.' % ioc['version'])
-            if ioc['indicatorthreattype'] != 'Botnet':
-                raise ValueError('Unknown indicatorthreattype %r, only Botnet is supported.' % ioc['indicatorthreattype'])
-            if 'additionalmetadata' in ioc and ioc['additionalmetadata'] not in [[], [''], ['null'], [None]]:
-                raise ValueError("Cannot parse IOC, format of field 'additionalmetadata' is unknown: %r."
-                                 "" % ioc['additionalmetadata'])
-            event = self.new_event(report)
-            for key, value in MAPPING.items():
-                if key in ioc:
-                    if key == "firstreporteddatetime":
-                        ioc[key] += ' UTC'
-                    event[value] = ioc[key]
-            extra = {}
-            for key, value in EXTRA.items():
-                if key in ioc and ioc[key]:
-                    extra[value] = ioc[key]
-            if extra:
-                event.add('extra', extra)
-            event.add('feed.accuracy',
-                      event.get('feed.accuracy', 100) * ioc['confidence'] / 100,
-                      overwrite=True)
-            event.add('classification.type', 'botnet drone')
-            event.add('raw', raw)
-            self.send_message(event)
 
-        self.acknowledge_message()
+    parse = ParserBot.parse_json
+    recover_line = ParserBot.recover_line_json
+
+    def parse_line(self, line, report):
+        raw = json.dumps(line, sort_keys=True)  # not applying formatting here
+        if line['version'] != 1.5:
+            raise ValueError('Data is in unknown format %r, only version 1.5 is supported.' % line['version'])
+        if line['indicatorthreattype'] != 'Botnet':
+            raise ValueError('Unknown indicatorthreattype %r, only Botnet is supported.' % line['indicatorthreattype'])
+        if 'additionalmetadata' in line and line['additionalmetadata'] in [[], [''], ['null'], [None]]:
+            del line['additionalmetadata']
+        event = self.new_event(report)
+        extra = {}
+        for key, value in line.items():
+            if key in ['version', 'indicatorthreattype', 'confidence', 'indicatorexpirationdatetime']:
+                continue
+            if key == "firstreporteddatetime":
+                value += ' UTC'
+            if key == "hostname" and value == line["networkdestinationipv4"]:  # ignore IP in FQDN field
+                continue
+            if key in MAPPING:
+                event[MAPPING[key]] = value
+            else:
+                extra[MAPPING[key]] = value
+        if extra:
+            event.add('extra', extra)
+        event.add('feed.accuracy',
+                  event.get('feed.accuracy', 100) * line['confidence'] / 100,
+                  overwrite=True)
+        event.add('classification.type', 'botnet drone')
+        event.add('raw', raw)
+        yield event
 
 
 BOT = MicrosoftCTIPParserBot

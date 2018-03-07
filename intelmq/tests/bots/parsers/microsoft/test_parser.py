@@ -76,7 +76,7 @@ EXAMPLE_EVENTS = [{
     'destination.ip': '203.0.113.220',
     'destination.port': 443,
     'event_description.text': 'Host is a member of Botnet B75-S12',
-    'extra': '{"ispartnershareable": "true", "isproductlicensed": "true", "tlp": "Green"}',
+    'extra': '{"additionalmetadata": ["any??thing\x0000can\x01be!here??"], "ispartnershareable": "true", "isproductlicensed": "true", "tlp": "Green"}',
     'feed.accuracy': 100.0,
     'feed.name': 'misp_test',
     'feed.url': 'http://192.168.56.102/',
