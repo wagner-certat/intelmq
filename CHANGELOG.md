@@ -108,6 +108,7 @@ CHANGELOG
 
 #### Experts
 * `certat_contact_intern`: Added ability to handle tlp-amber only data.
+* modify expert: added rule for 'iotrdp' in Spamhaus CERT feed.
 
 #### Outputs
 
