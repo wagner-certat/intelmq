@@ -122,6 +122,7 @@ CHANGELOG
 ### Documentation
 
 ### Tools
+- `intelmqcli_create_reports`: JSON reports are now indented and sorted
 
 ### Tests
 - lib/bot: No dumps will be written during tests (#934).
