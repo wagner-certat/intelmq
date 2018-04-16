@@ -93,6 +93,8 @@ CHANGELOG
 
 1.0.4 Bugfix release (unreleased)
 ---------------------------------
+- make code style compatible to pycodestyle 2.4.0
+
 ### Contrib
 
 ### Core
@@ -103,6 +105,8 @@ CHANGELOG
 ### Harmonization
 
 ### Bots
+* Use the new pypi website at https://pypi.org/ everywhere.
+
 #### Collectors
 
 #### Parsers
