@@ -6,6 +6,11 @@ import codecs
 from intelmq.lib.bot import Bot
 from intelmq.lib.exceptions import InvalidArgument
 
+try:
+    from publicsuffixlist import PublicSuffixList
+except ImportError:
+    from .lib import PublicSuffixList
+
 
 ALLOWED_FIELDS = ['fqdn', 'reverse_dns']
 
@@ -16,7 +21,7 @@ class DomainSuffixExpertBot(Bot):
     def init(self):
         self.field = self.parameters.field
         if self.field not in ALLOWED_FIELDS:
-            raise InvalidArgument('key', got=self.field, expected=self.field)
+            raise InvalidArgument('key', got=self.field, expected=ALLOWED_FIELDS)
         with codecs.open(self.parameters.suffix_file, encoding='UTF-8') as file_handle:
             for line in file_handle.readlines():
                 line = line.strip()
