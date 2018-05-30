@@ -73,8 +73,12 @@ CHANGELOG
 - added `intelmq.bots.parsers.malwareurl.parser`
 - added `intelmq.bots.parsers.threatminer.parser`
 - added `intelmq.bots.parsers.microsoft.parser_ctip`
- * ignore the invalid IP '0.0.0.0' for the destination
- * fix the raw/dumped messages, did not contain the paling list previously.
+  * ignore the invalid IP '0.0.0.0' for the destination
+  * fix the raw/dumped messages, did not contain the paling list previously.
+  * use the new harmonization field `tlp` instead of `extra.tlp`.
+- `bots.parsers.alienvault.parser_otx`: Save TLP data in the new harmonization field `tlp`.
+- added `intelmq.bots.parsers.openphish.parser_commercial`
+- added `intelmq.bots.parsers.microsoft.parser_bingmurls`
 
 #### Experts
 - Added sieve expert for filtering and modifying events (#1083)
