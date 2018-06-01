@@ -519,6 +519,21 @@
                 "user": "intelmq"
             }
         },
+        "CSV": {
+            "description": "Converts an event or report to CSV, saved in field 'output'.",
+            "module": "intelmq.bots.experts.csv.expert",
+            "parameters": {
+                "delimiter": ",",
+                "fieldnames": [
+                    "time.source",
+                    "source.ip",
+                    "classification.taxonomy",
+                    "classification.type",
+                    "classification.identifier"
+                ],
+                "header": false
+            }
+        },
         "Copy Extra": {
             "description": "Copies a list of values from `extra` to `shareable_extra_info`.",
             "module": "intelmq.bots.experts.copy_extra.expert",
