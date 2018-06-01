@@ -533,6 +533,15 @@
                 "overwrite_cc": false
             }
         },
+        "CSV": {
+            "description": "Converts an event or report to CSV, saved in field 'output'.",
+            "module": "intelmq.bots.experts.csv.expert",
+            "parameters": {
+                "delimiter": ",",
+                "fieldnames": ["time.source", "source.ip", "classification.taxonomy", "classification.type", "classification.identifier"],
+                "header": false
+            }
+        },
         "Cymru Whois": {
             "description": "Cymru Whois (IP to ASN) is the bot responsible to add network information to the events (BGP, ASN, AS Name, Country, etc..).",
             "module": "intelmq.bots.experts.cymru_whois.expert",
