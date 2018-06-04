@@ -483,6 +483,16 @@
                 "redis_cache_ttl": "86400"
             }
         },
+        "Cert.at Basic Aggregation": {
+            "description": "Very basic aggregation.",
+            "module": "intelmq.bots.experts.certat_basic_aggregation.expert",
+            "parameters": {
+                "input_field": "",
+                "minimum_count": 10,
+                "output_field": "output",
+                "separator": "\n"
+            }
+        },
         "CERT.at Contact Database": {
             "description": "Cert.at Contact Database is the bot responsible to get CERT. Set filter to true if you want to filter out events for cert.at. Set add_cc to true if you want to overwrite an existing CC value.",
             "module": "intelmq.bots.experts.national_cert_contact_certat.expert",

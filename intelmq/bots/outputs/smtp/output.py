@@ -29,13 +29,14 @@ class SMTPOutputBot(Bot):
     def process(self):
         event = self.receive_message()
 
-        csvfile = io.StringIO()
-        writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames,
-                                quoting=csv.QUOTE_MINIMAL, delimiter=str(";"),
-                                extrasaction='ignore', lineterminator='\n')
-        writer.writeheader()
-        writer.writerow(event)
-        attachment = csvfile.getvalue()
+        if self.fieldnames:
+            csvfile = io.StringIO()
+            writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames,
+                                    quoting=csv.QUOTE_MINIMAL, delimiter=str(";"),
+                                    extrasaction='ignore', lineterminator='\n')
+            writer.writeheader()
+            writer.writerow(event)
+            attachment = csvfile.getvalue()
 
         if self.http_verify_cert and self.smtp_class == smtplib.SMTP_SSL:
             kwargs = {'context': ssl.create_default_context()}
@@ -54,7 +55,8 @@ class SMTPOutputBot(Bot):
             msg = MIMEMultipart()
             if self.parameters.text:
                 msg.attach(MIMEText(self.parameters.text.format(ev=event)))
-            msg.attach(MIMEText(attachment, 'csv'))
+            if self.fieldnames:
+                msg.attach(MIMEText(attachment, 'csv'))
             msg['Subject'] = self.parameters.subject.format(ev=event)
             msg['From'] = self.parameters.mail_from.format(ev=event)
             msg['To'] = self.parameters.mail_to.format(ev=event)
