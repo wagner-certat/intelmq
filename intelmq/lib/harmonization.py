@@ -40,8 +40,10 @@ class GenericType(object):
 
     @staticmethod
     def is_valid(value, sanitize=False):
+        print('GenericType is_valid', repr(value))
         if sanitize:
             value = GenericType().sanitize(value)
+            print('GenericType sanitized', repr(value))
 
         if not value:
             return False
@@ -56,10 +58,12 @@ class GenericType(object):
 
     @staticmethod
     def sanitize(value):
+        print('GenericType sanitize', repr(value))
         if not value:
             return None
 
         if isinstance(value, str):
+            print('GenericType stripped')
             return value.strip()
 
         if isinstance(value, bytes):
@@ -579,20 +583,20 @@ class JSON(GenericType):
     @staticmethod
     def is_valid(value, sanitize=False):
         if sanitize:
+            print('JSON is_valid sanitize', value)
             value = JSON().sanitize(value)
+            print('JSON is_valid sanitized', value)
 
         if not isinstance(value, str):
             return False
 
         try:
-            unpacked = json.loads(value)
+            json.loads(value)
         except ValueError:
+            print('JSON is_valid no JSON', value)
             return False
         else:
-            if isinstance(unpacked, dict) and unpacked != {}:
-                return True
-
-        return False
+            return True
 
     @staticmethod
     def sanitize(value):
@@ -634,8 +638,10 @@ class String(GenericType):
 
     @staticmethod
     def is_valid(value, sanitize=False):
+        print('is_valid', repr(value))
         if sanitize:
             value = GenericType().sanitize(value)
+            print('is_valid sanitized', repr(value))
 
         if not GenericType().is_valid(value):
             return False

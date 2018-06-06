@@ -24,7 +24,7 @@ class CSVExpertBot(Bot):
         writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames,
                                 quoting=csv.QUOTE_MINIMAL,
                                 delimiter=self.delimiter,
-                                extrasaction='ignore', lineterminator=r'\n')
+                                extrasaction='ignore', lineterminator='\n')
         if self.header:
             writer.writeheader()
         writer.writerow(event)
@@ -34,5 +34,6 @@ class CSVExpertBot(Bot):
         print('a in event', repr(event['output']))
         self.send_message(event)
         self.acknowledge_message()
+
 
 BOT = CSVExpertBot

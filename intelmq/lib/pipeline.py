@@ -101,7 +101,9 @@ class Redis(Pipeline):
         super(Redis, self).set_queues(queues, queues_type)
 
     def send(self, message):
+        print('pipe send', repr(message))
         message = utils.encode(message)
+        print('pipe send encoded', repr(message))
         if self.load_balance:
             destination_queue = self.destination_queues[
                 self.load_balance_iterator]

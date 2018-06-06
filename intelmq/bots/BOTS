@@ -490,6 +490,11 @@
                 "input_field": "",
                 "minimum_count": 10,
                 "output_field": "output",
+                "redis_cache_db": "5",
+                "redis_cache_host": "127.0.0.1",
+                "redis_cache_port": "6379",
+                "redis_cache_password": null,
+                "redis_cache_ttl": "86400"
                 "separator": "\n"
             }
         },

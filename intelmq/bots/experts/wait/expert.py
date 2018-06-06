@@ -39,13 +39,17 @@ class WaitExpertBot(Bot):
                                  )
 
     def process(self):
-        event = self.receive_message()
+#        event = self.receive_message()
         if self.mode == 'queue':
             while self.redis.llen(self.queue_name) > self.queue_size:
                 time.sleep(self.queue_polling_interval)
         elif self.mode == 'sleep':
             time.sleep(self.sleep_time)
-
+        event = self.new_event()
+        print('--------')
+        event['source.url'] = '''http://example.com/'''
+        print('before send', repr(event))
+#        self.stop()
         self.send_message(event)
         self.acknowledge_message()
 

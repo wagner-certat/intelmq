@@ -350,6 +350,7 @@ class Bot(object):
 
     def send_message(self, *messages):
         for message in messages:
+            print('send', repr(message))
             if not message:
                 self.logger.warning("Ignoring empty message at sending. Possible bug in bot.")
                 continue
@@ -369,6 +370,7 @@ class Bot(object):
                 self.__message_counter_start = datetime.datetime.now()
 
             raw_message = libmessage.MessageFactory.serialize(message)
+            print('raw_message', repr(raw_message))
             self.__destination_pipeline.send(raw_message)
 
     def receive_message(self):

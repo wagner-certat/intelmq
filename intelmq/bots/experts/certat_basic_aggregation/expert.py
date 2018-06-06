@@ -2,6 +2,8 @@
 from intelmq.lib.bot import Bot
 from intelmq.lib.cache import Cache
 
+import json
+
 
 class CertatBasicAggregation(Bot):
 
@@ -23,7 +25,10 @@ class CertatBasicAggregation(Bot):
         while self.cache.llen(self.cache_key) < self.parameters.minimum_count or self.count_input():
             new_message = self.receive_message()
             if self.parameters.input_field in new_message:
-                self.cache.lpush(self.cache_key, new_message[self.parameters.input_field])
+                data = new_message[self.parameters.input_field]
+                if self.parameters.input_field == 'output':
+                    data = json.loads(data)
+                self.cache.lpush(self.cache_key, data)
             self.acknowledge_message()
         event = self.new_event()
         event.add(self.parameters.output_field,
