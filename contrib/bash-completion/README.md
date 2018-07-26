@@ -22,6 +22,10 @@ Bash completion for `intelmqctl` and `intelmqdump` can be set up with the follow
 
     dnf install bash-completion jq
 
+### Fedora
+
+    dnf install bash-completion jq
+
 ## Installation
 
 1. Copy ./contrib/bash-completion/intelmq* to '/etc/bash_completion.d/'
