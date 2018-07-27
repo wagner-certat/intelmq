@@ -24,7 +24,6 @@ build:
 		patch -p1 setup.py debian/patches/fix-dnspython-name.patch;\
 	fi
 	dh build --with python3 --without python2 --buildsystem=pybuild --with quilt --with systemd
-	chmod -x contrib/bash-completion/intelmq.sh
 
 override_dh_auto_build:
 
