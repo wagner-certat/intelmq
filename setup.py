@@ -17,6 +17,13 @@ REQUIRES = [
 if sys.version_info < (3, 5):
     REQUIRES.append('typing')
 
+exec(open(os.path.join(os.path.dirname(__file__),
+                       'intelmq/version.py')).read())  # defines __version__
+with open(os.path.join(os.path.dirname(__file__),
+                       'intelmq/__init__.py')) as init_fh:
+    init_file = init_fh.read()
+    after_import = init_file.find('\n\n\n')
+    exec(init_file[after_import:])
 
 DATA = [
     ('/opt/intelmq/etc/',
@@ -38,8 +45,6 @@ DATA = [
      ),
 ]
 
-exec(open(os.path.join(os.path.dirname(__file__),
-                       'intelmq/version.py')).read())  # defines __version__
 BOTS = []
 bots = json.load(open(os.path.join(os.path.dirname(__file__), 'intelmq/bots/BOTS')))
 for bot_type, bots in bots.items():

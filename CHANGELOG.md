@@ -30,6 +30,7 @@ CHANGELOG
 ### Documentation
 
 ### Packaging
+- Allow installation in arbitrary paths using the environment variable `INTELMQ_ROOT_DIR` (#805).
 
 ### Tests
 
