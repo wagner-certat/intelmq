@@ -7,7 +7,7 @@
   * [How to develop](#how-to-develop)
   * [Update](#update)
   * [Testing](#testing)
-    * [Environment variables](#environment-variables)777
+    * [Environment variables](#environment-variables)
     * [Configuration test files](#configuration-test-files)
 * [Development Guidelines](#development-guidelines)
   * [Coding-Rules](#coding-rules)
@@ -87,14 +87,14 @@ Developers MUST have a fork repository of IntelMQ in order to commit the new cod
 
 The following instructions will use `pip3 -e`, which gives you a so called *editable* installation. No code is copied in the libraries directories, there's just a link to your code. However, configuration files still required to be moved to `/opt/intelmq` as the instructions show.
 
+In this guide we use `/opt/dev_intelmq` as local repository copy. You can also use other directories as long as they are readable by other unprivileged users (e.g. home directories on Fedora can't be read by other users by default).
+`/opt/intelmq` is used as root location for IntelMQ installations, this is IntelMQ's default for this installation method. This directory is used for configurations (`/opt/intelmq/etc`), local states (`/opt/intelmq/var/lib`) and logs (`/opt/intelmq/var/log`).
+
 ```bash
 sudo -s
 
 git clone https://github.com/<your username>/intelmq.git /opt/dev_intelmq
 cd /opt/dev_intelmq
-
-git config core.fileMode false
-chmod -R 777 /intelmq
 
 pip3 install -e .
 
@@ -163,8 +163,8 @@ All changes have to be tested and new contributions must be accompanied by accor
 
     cd /opt/dev_intelmq
     python3 -m unittest {discover|filename}  # or
-    nosetests3 [filename]  # or
-    python3 setup.py test  # uses a build environment
+    nosetests3 [filename]  # alternatively nosetests or nosetests-3.5 depending on your installation, or
+    python3 setup.py test  # uses a build environment (no external dependencies)
 
 It may be necessary to switch the user to `intelmq` if the run-path (`/opt/intelmq/var/run/`) is not writeable by the current user. Some bots need local databases to succeed. If you don't mind about those and only want to test one explicit test file, give the file path as argument.
 
@@ -174,16 +174,16 @@ There is a [Travis-CI](https://travis-ci.org/certtools/intelmq/builds) setup for
 
 There are a bunch of environemnt variables which switch on/off some tests:
 
-* `INTELMQ_TEST_DATABASES`: databases such as postgres, elasticsearch, mongodb are not tested by default, set to 1 to test those bots.
+* `INTELMQ_TEST_DATABASES`: databases such as postgres, elasticsearch, mongodb are not tested by default, set to 1 to test those bots. These tests need preparation, e.g. running databases with users and certain passwords etc. Have a look at the `.travis.yml` in IntelMQ's repository for steps to set databases up.
 * `INTELMQ_SKIP_INTERNET`: tests requiring internet connection will be skipped if this is set to 1.
 * `INTELMQ_SKIP_REDIS`: redis-related tests are ran by default, set this to 1 to skip those.
-* `INTELMQ_TEST_LOCAL_WEB`: tests which connect to local web servers or proxies are active when set to 1.
+* `INTELMQ_TEST_LOCAL_WEB`: tests which connect to local web servers or proxies are active when set to 1. Running these tests assume a local webserverserving certain files and/or proxy. Example preparation steps can be found in `.travis.yml` again.
 * `INTELMQ_TEST_EXOTIC`: some bots and tests require libraries which may not be available, those are skipped by default. To run them, set this to 1.
 
 For example, to run all tests you can use:
 
 ```bash
-INTELMQ_TEST_DATABASES=1 INTELMQ_TEST_LOCAL_WEB=1 INTELMQ_TEST_EXOTIC=1 nosetests
+INTELMQ_TEST_DATABASES=1 INTELMQ_TEST_LOCAL_WEB=1 INTELMQ_TEST_EXOTIC=1 nosetests3
 ```
 
 ### Configuration test files

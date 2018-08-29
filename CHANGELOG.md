@@ -63,6 +63,7 @@ CHANGELOG
     None (default): If the value exists an `KeyExists` exception is thrown (previously the same as False).
     This allows shorter code in the bots, as an 'overwrite' configuration parameter can be directly passed to the function.
   - The message class has now the possibility to return a default value for non-exisiting fields, see `Message.set_default_value`.
+  - Message.get behaves the same like `Message.__getitem__` (#1305).
 - Add `RewindableFileHandle` to utils making handling of CSV files more easy (optionally)
 - lib/pipeline:
   * you may now define more than one destination queues path the bot should pass the message to, see [Pipelines](https://github.com/certtools/intelmq/blob/develop/docs/User-Guide.md#pipeline-configuration) (#1088, #1190).
@@ -201,6 +202,10 @@ CHANGELOG
 - `intelmq/bots/experts/tor_nodes/update-tor-nodes`: Use check.torproject.org as source as internet2.us is down (#1289).
 
 #### Outputs
+- `bots.output.amqptopic`:
+  - The default exchange must not be declared (#1295).
+  - Unencodable characters are prepended by backslashes by default. Otherwise Unicode characters can't be encoded and sent (#1296).
+  - Gracefully close AMQP connection on shutdown of bot.
 
 ### Documentation
 - Bots: document redis cache parameters.
