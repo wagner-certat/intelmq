@@ -83,7 +83,7 @@ Similarly, if code does not get accepted upstream by the main developers, it is 
 
 ## Installation
 
-Developers MUST have a fork repository of IntelMQ in order to commit the new code to their repository and then be able to do pull requests to main repository.
+Developers can create a fork repository of IntelMQ in order to commit the new code to this repository and then be able to do pull requests to the main repository. Otherwise you can just use the 'certtools' as username below.
 
 The following instructions will use `pip3 -e`, which gives you a so called *editable* installation. No code is copied in the libraries directories, there's just a link to your code. However, configuration files still required to be moved to `/opt/intelmq` as the instructions show.
 
@@ -159,7 +159,19 @@ intelmqctl start <bot_id>
 
 ## Testing
 
-All changes have to be tested and new contributions must be accompanied by according unit tests. You can run the tests by changing to the directory with IntelMQ repository and running either `unittest` or `nosetests`:
+### Additional optional requirements
+
+For the documentation tests two additional libraries are required: Cerberus and PyYAML. You can install them with pip:
+
+```bash
+pip3 install Cerberus PyYAML
+```
+
+or the package management of your operating system.
+
+### Run the tests
+
+All changes have to be tested and new contributions should be accompanied by according unit tests. You can run the tests by changing to the directory with IntelMQ repository and running either `unittest` or `nosetests`:
 
     cd /opt/dev_intelmq
     python3 -m unittest {discover|filename}  # or
@@ -172,13 +184,14 @@ There is a [Travis-CI](https://travis-ci.org/certtools/intelmq/builds) setup for
 
 ### Environment variables
 
-There are a bunch of environemnt variables which switch on/off some tests:
+There are a bunch of environment variables which switch on/off some tests:
 
 * `INTELMQ_TEST_DATABASES`: databases such as postgres, elasticsearch, mongodb are not tested by default, set to 1 to test those bots. These tests need preparation, e.g. running databases with users and certain passwords etc. Have a look at the `.travis.yml` in IntelMQ's repository for steps to set databases up.
 * `INTELMQ_SKIP_INTERNET`: tests requiring internet connection will be skipped if this is set to 1.
 * `INTELMQ_SKIP_REDIS`: redis-related tests are ran by default, set this to 1 to skip those.
 * `INTELMQ_TEST_LOCAL_WEB`: tests which connect to local web servers or proxies are active when set to 1. Running these tests assume a local webserverserving certain files and/or proxy. Example preparation steps can be found in `.travis.yml` again.
 * `INTELMQ_TEST_EXOTIC`: some bots and tests require libraries which may not be available, those are skipped by default. To run them, set this to 1.
+* `INTELMQ_TEST_REDIS_PASSWORD`: Set this value to the password for the local redis database if needed.
 
 For example, to run all tests you can use:
 
@@ -212,14 +225,9 @@ We support Python 3 only.
 * Each internal object in IntelMQ (Event, Report, etc) that has strings, their strings MUST be in UTF-8 Unicode format.
 * Any data received from external sources MUST be transformed into UTF-8 Unicode format before add it to IntelMQ objects.
 
-### Back-end independence
+### Back-end independence and Compatibility
 
-Any component of the IntelMQ MUST be independent of the message queue technology (Redis, RabbitMQ, etc...), except `lib/pipeline.py`. Intelmq bots MAY only assume to use the class specified in `lib/pipeline.py` and `lib/cache.py` for inter-process or inter-bot communications.
-
-### Compatibility
-
-IntelMQ core (including intelmqctl) MUST be compatible with IntelMQ Manager.
-
+Any component of the IntelMQ MUST be independent of the message queue technology (Redis, RabbitMQ, etc...).
 
 ## Layout Rules
 
@@ -283,18 +291,14 @@ Any directory and file of IntelMQ has to follow the Directories and Files naming
 * be represented with lowercase and in case of the name has multiple words, the spaces between them must be removed or replaced by underscores;
 * be self-explaining what the content contains.
 
-In the bot directories name, the name must correspond to the feed name. If necessary, some words can be added to give context by joining together using underscores.
+In the bot directories name, the name must correspond to the feed provider. If necessary and applicable the feed name can and should be used as postfix for the filename.
 
-Example (without context words):
+Examples:
 ```
-intelmq/bots/parser/dragonresearchgroup
-intelmq/bots/parser/malwaredomainlist
-```
-
-Example (with context words):
-```
-intelmq/bots/parser/cymru_full_bogons
-intelmq/bots/parser/taichung_city_netflow
+intelmq/bots/parser/malwaredomainlist/parser.py
+intelmq/bots/parser/taichung/parser.py
+intelmq/bots/parser/cymru/parser_full_bogons.py
+intelmq/bots/parser/abusech/parser_ransomware.py
 ```
 
 ### Class Names
@@ -719,6 +723,16 @@ See the [testing section](#testing) about how to run the tests.
 
 In the end, the new information about the new bot should be added to BOTS file
 located at `intelmq/bots`. Note that the file is sorted!
+
+## Cache
+
+Bots can use a Redis database as cache instance. Use the `intelmq.lib.utils.Cache` class to set this up and/or look at existing bots, like the `cymru_whois` expert how the cache can be used.
+Bots must set a TTL for all keys that are cached to avoid caches growing endless over time.
+Bots must use the Redis databases `>=` 10, but not those already used by other bots. See `bots/BOTS` what databases are already used.
+
+The databases `<` 10 are reserved for the IntelMQ core:
+ * 2: pipeline
+ * 4: tests
 
 # Feeds documentation
 
