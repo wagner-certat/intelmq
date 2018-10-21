@@ -1,8 +1,9 @@
-intelmq (1.1.1~alpha1-1) UNRELEASED; urgency=medium
+intelmq (1.1.1~alpha1-1) stable; urgency=medium
 
+  [ Wagner Sebastian ]
   * Update to version 1.1.1 alpha 1
 
- -- Wagner Sebastian <wagner@cert.at>  Wed, 05 Sep 2018 16:23:42 +0200
+ -- Sebastian Wagner <wagner@cert.at>  Sun, 21 Oct 2018 13:52:08 +0200
 
 intelmq (1.1.0-1) stable; urgency=medium
 
