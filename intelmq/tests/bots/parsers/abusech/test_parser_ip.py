@@ -22,17 +22,30 @@ EXAMPLE_FEODO_EVENT = {"feed.url": "https://feodotracker.abuse.ch/downloads/ipbl
                        "feed.name": "AbuseCH Feodotracker",
                        "source.ip": "110.93.230.101",
                        "source.port": 990,
-                       "extra.last_online": "2019-03-05",
                        "raw": utils.base64_encode("2019-03-04 22:10:24,110.93.230.101,990,2019-03-05,Heodo"),
                        "time.observation": "2019-03-01T01:01:01+00:00",
                        "extra.feed_last_generated": "2019-03-05T22:10:24+00:00",
-                       "time.source": "2019-03-04T22:10:24+00:00",
+                       "time.source": "2019-03-05T00:00:00+00:00",
                        "classification.taxonomy": "malicious code",
                        "classification.type": "c&c",
                        "malware.name": "heodo",
                        "__type": "Event"
                        }
-
+EXAMPLE_FEODO_EVENT1 = {"feed.url": "https://feodotracker.abuse.ch/downloads/ipblocklist.csv",
+                        "feed.name": "AbuseCH Feodotracker",
+                        "source.ip": "192.155.88.196",
+                        "source.port": 8080,
+                        "extra.last_online": "2019-03-05",
+                        "raw": utils.base64_encode("2019-03-04 22:10:24,110.93.230.101,990,2019-03-05,Heodo"),
+                        "time.observation": "2019-03-01T01:01:01+00:00",
+                        "extra.feed_last_generated": "2019-03-05T22:10:24+00:00",
+                        "extra.first_seen": "2017-12-18T23:36:45+00:00
+                        "time.source": "2017-12-18T23:36:45+00:00",
+                        "classification.taxonomy": "malicious code",
+                        "classification.type": "c&c",
+                        "malware.name": "heodo",
+                        "__type": "Event"
+                        }
 
 class TestAbusechIPParserBot(test.BotTestCase, unittest.TestCase):
     """
@@ -48,6 +61,7 @@ class TestAbusechIPParserBot(test.BotTestCase, unittest.TestCase):
         """ Test if correct Event has been produced. """
         self.run_bot()
         self.assertMessageEqual(0, EXAMPLE_FEODO_EVENT)
+        self.assertMessageEqual(1, EXAMPLE_FEODO_EVENT1)
 
 
 if __name__ == '__main__':  # pragma: no cover

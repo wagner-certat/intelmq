@@ -20,6 +20,7 @@ CHANGELOG
 #### Collectors
 
 #### Parsers
+- `intelmq.bots.parsers.abusech.parser_ip`: Support LastOnline column in feodo feed (#1400).
 
 #### Experts
 - added `intelmq.bots.experts.do_portal.expert`.

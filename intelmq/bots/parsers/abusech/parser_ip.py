@@ -16,10 +16,10 @@ from intelmq.lib.bot import ParserBot
 FEEDS = {
     'https://feodotracker.abuse.ch/downloads/ipblocklist.csv': {
         'format': [
-            'time.source',
+            ('extra.first_seen', lambda x: not x[3]),
             'source.ip',
             'source.port',
-            'extra.last_online',
+            'time.source',
             'malware.name'
         ],
         'malware': 'Cridex'
