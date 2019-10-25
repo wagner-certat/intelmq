@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -65,7 +66,7 @@ class FileOutputBot(Bot):
                 self.open_file(filename)
 
         if self.single_key:
-            event_data = str(event.get(self.single_key))
+            event_data = str(json.loads(event.get(self.single_key)))
             if self.single_key == 'raw':
                 event_data = base64_decode(event_data)
         else:

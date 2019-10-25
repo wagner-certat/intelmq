@@ -5,7 +5,7 @@ import os
 import socket
 import time
 from os import path
-
+import json
 from intelmq.lib.bot import Bot
 from intelmq.lib.exceptions import ConfigurationError
 
@@ -61,7 +61,7 @@ class FilesOutputBot(Bot):
     def process(self):
         event = self.receive_message()
         if self.parameters.single_key:
-            event_data = str(event.get(self.parameters.single_key))
+            event_data = str(json.loads(event.get(self.parameters.single_key)))
         else:
             event_data = event.to_json(hierarchical=self.parameters.hierarchical_output)
         # Create file in tmp dir
