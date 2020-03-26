@@ -280,6 +280,7 @@ class StreamHandler(logging.StreamHandler):
                 stream = sys.stdout
                 stream.write(msg)
             else:  # warning, error, critical
+                # print('StreamHandler', file=sys.stderr)
                 stream = sys.stderr
                 stream.write(red(msg))
             stream.write(self.terminator)

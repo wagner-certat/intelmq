@@ -94,7 +94,8 @@ class Bot(object):
             if self.__instance_id:
                 self.is_multithreaded = True
             self.__init_logger()
-        except Exception:
+        except Exception as exc:
+            # print('init exception', exc)
             self.__log_buffer.append(('critical', traceback.format_exc()))
             self.stop()
         else:
@@ -278,6 +279,7 @@ class Bot(object):
                 self.__disconnect_pipelines()
 
             except Exception as exc:
+                # print('catched', exc, file=sys.stderr)
                 # in case of serious system issues, exit immediately
                 if isinstance(exc, MemoryError):
                     self.logger.exception('Out of memory. Exit immediately. Reason: %r.' % exc.args[0])
@@ -289,8 +291,10 @@ class Bot(object):
                 error_on_message = sys.exc_info()
 
                 if self.parameters.error_log_exception:
+                    # print('exception logging', file=sys.stderr)
                     self.logger.exception("Bot has found a problem.")
                 else:
+                    # print('error logging', file=sys.stderr)
                     self.logger.error(utils.error_message_from_exc(exc))
                     self.logger.error("Bot has found a problem.")
 
@@ -712,6 +716,7 @@ class Bot(object):
         self.logger = utils.log(self.__bot_id_full, syslog=syslog,
                                 log_path=self.parameters.logging_path,
                                 log_level=self.parameters.logging_level)
+        # self.logger.info('after creating new logger')
 
     def __load_pipeline_configuration(self):
         self.logger.debug("Loading pipeline configuration from %r.", PIPELINE_CONF_FILE)
